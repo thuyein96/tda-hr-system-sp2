@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { EyeOff } from 'lucide-react';
+import { EyeOff, Eye } from 'lucide-react';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -53,8 +53,8 @@ const LoginForm = () => {
               onClick={() => setShowPassword(!showPassword)}
               className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
             >
-              <EyeOff size={16} />
-              Hide
+              {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+              {showPassword ? 'Show' : 'Hide'}
             </button>
           </div>
           <input
