@@ -1,17 +1,9 @@
 
 import React from 'react';
-import TopBar from '../components/TopBar';
-import LoginForm from '../components/LoginForm';
+import LoginPage from '../app/login/page';
 
 const Index = () => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <TopBar />
-      <div className="container mx-auto px-4">
-        <LoginForm />
-      </div>
-    </div>
-  );
+  return <LoginPage />;
 };
 
 export default Index;
