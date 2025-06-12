@@ -45,6 +45,12 @@ const Layout = ({ children }: LayoutProps) => {
   const sidebarItems = translations[language].sidebar;
   const isMobile = useIsMobile();
 
+  const today = new Date();
+  const day = today.toLocaleDateString(language === "English" ? "en-US" : "my-MM", {
+    weekday: "long",
+  });
+  const date = today.toLocaleDateString(language === "English" ? "en-GB" : "my-MM");
+
   const handleLogout = () => {
     navigate("/");
   };
@@ -91,7 +97,7 @@ const Layout = ({ children }: LayoutProps) => {
           )}
         </div>
 
-        {/* Search and Language */}
+        {/* Search + Language + Date */}
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto">
           <div className="flex items-center w-full max-w-xs px-4 py-[8px] rounded-[10px] outline outline-1 outline-[#FF676733]">
             <Search size={20} className="text-[#FF6767] mr-2" />
@@ -125,6 +131,12 @@ const Layout = ({ children }: LayoutProps) => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Date & Day */}
+          <div className="hidden sm:block text-right">
+            <div className="text-[15px] text-black font-medium font-inter">{day}</div>
+            <div className="text-[14px] text-[#3ABEFF] font-medium font-inter">{date}</div>
           </div>
         </div>
       </header>
@@ -173,7 +185,7 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         </aside>
 
-        {/* Mobile Overlay */}
+        {/* Overlay */}
         {isMobile && sidebarOpen && (
           <div
             className="fixed inset-0 bg-black opacity-30 z-10"
