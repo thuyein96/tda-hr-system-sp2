@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, LogOut, ChevronDown, Menu, X } from "lucide-react";
-import { useIsMobile } from "../hooks/use-mobile"; // adjust path as needed
+import { useIsMobile } from "../hooks/use-mobile"; // Update if path differs
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -43,18 +43,10 @@ const Layout = ({ children }: LayoutProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const sidebarItems = translations[language].sidebar;
-
-  const today = new Date();
-  const day = today.toLocaleDateString(language === "English" ? "en-US" : "my-MM", {
-    weekday: "long",
-  });
-  const date = today.toLocaleDateString(language === "English" ? "en-GB" : "my-MM");
-
   const isMobile = useIsMobile();
 
   const handleLogout = () => {
-    // Implement your logout logic here
-    navigate("/login");
+    navigate("/");
   };
 
   useEffect(() => {
@@ -72,7 +64,6 @@ const Layout = ({ children }: LayoutProps) => {
     setDropdownOpen(false);
   };
 
-  // Close sidebar when route changes on mobile
   useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false);
@@ -82,14 +73,13 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="flex flex-col min-h-screen font-poppins bg-white overflow-hidden">
       {/* Header */}
-      <header className="flex flex-col sm:flex-row justify-between items-center h-auto sm:h-[100px] px-6 md:px-12 shadow-md bg-[#F8F8F8] gap-3 sm:gap-0">
+      <header className="flex flex-col sm:flex-row justify-between items-center h-auto sm:h-[80px] px-4 md:px-8 border-b border-[#E5E5E5] bg-[#F8F8F8] gap-2 sm:gap-0">
         <div className="flex justify-between items-center w-full sm:w-auto">
-          <div className="text-[32px] font-semibold font-inter">
+          <div className="flex items-center text-[28px] font-semibold font-inter">
             <span className="text-[#FF6767]">TDA</span>
             <span className="text-black">: HR</span>
           </div>
 
-          {/* Mobile menu toggle */}
           {isMobile && (
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -101,10 +91,9 @@ const Layout = ({ children }: LayoutProps) => {
           )}
         </div>
 
-        {/* Search and Language container */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 w-full sm:w-auto">
-          {/* Search input */}
-          <div className="flex items-center w-full max-w-xs px-4 py-[10px] rounded-[10px] outline outline-1 outline-[#FF676733]">
+        {/* Search and Language */}
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <div className="flex items-center w-full max-w-xs px-4 py-[8px] rounded-[10px] outline outline-1 outline-[#FF676733]">
             <Search size={20} className="text-[#FF6767] mr-2" />
             <input
               type="text"
@@ -113,27 +102,23 @@ const Layout = ({ children }: LayoutProps) => {
             />
           </div>
 
-          {/* Language Dropdown */}
           <div
             ref={dropdownRef}
-            className="flex items-center justify-center h-[40px] px-3 rounded-[10px] outline outline-1 outline-[#FF676733] gap-2 relative cursor-pointer select-none"
+            className="flex items-center justify-center h-[38px] px-3 rounded-[10px] outline outline-1 outline-[#FF676733] gap-2 relative cursor-pointer select-none"
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
-            <span className="bg-transparent text-[#16151C] text-[14px] font-light leading-[22px]">
-              {language}
-            </span>
-            <ChevronDown size={20} className="text-[#16151C]" />
-
+            <span className="text-[#16151C] text-[14px] font-light">{language}</span>
+            <ChevronDown size={18} className="text-[#16151C]" />
             {dropdownOpen && (
               <div className="absolute top-full mt-1 right-0 bg-white border border-gray-300 rounded shadow-md w-[120px] z-10">
                 <div
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#16151C] text-[14px]"
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[14px]"
                   onClick={() => handleSelectLanguage("English")}
                 >
                   English
                 </div>
                 <div
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#16151C] text-[14px]"
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[14px]"
                   onClick={() => handleSelectLanguage("Burmese")}
                 >
                   Burmese
@@ -149,10 +134,10 @@ const Layout = ({ children }: LayoutProps) => {
         <aside
           className={`${
             isMobile
-              ? `fixed top-[100px] left-0 h-[calc(100vh-100px)] w-[260px] bg-[#FAFAFA] pt-8 px-6 border-r border-gray-200 z-20 transform transition-transform duration-300 ${
+              ? `fixed top-[80px] left-0 h-[calc(100vh-80px)] w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200 z-20 transform transition-transform duration-300 ${
                   sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 }`
-              : "hidden sm:flex flex-col w-[260px] bg-[#FAFAFA] pt-8 px-6 border-r border-gray-200"
+              : "hidden sm:flex flex-col w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200"
           }`}
         >
           <nav className="flex-1 space-y-2">
@@ -160,7 +145,7 @@ const Layout = ({ children }: LayoutProps) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative flex items-center w-full h-[50px] pl-4 rounded-r-[10px] transition-all duration-150 ${
+                className={`relative flex items-center w-full h-[44px] pl-4 rounded-r-[10px] transition-all duration-150 ${
                   location.pathname === item.path
                     ? "bg-[rgba(255,103,103,0.05)] text-[#FF6767] font-semibold"
                     : "text-[#16151C] font-light hover:bg-gray-100"
@@ -171,13 +156,13 @@ const Layout = ({ children }: LayoutProps) => {
                     location.pathname === item.path ? "bg-[#FF6767]" : "opacity-0"
                   }`}
                 />
-                <span className="text-lg mr-4">{item.icon}</span>
-                <span className="text-[16px] leading-[24px]">{item.label}</span>
+                <span className="text-lg mr-3">{item.icon}</span>
+                <span className="text-[15px] leading-[22px]">{item.label}</span>
               </Link>
             ))}
           </nav>
 
-          <div className="p-6">
+          <div className="p-4">
             <button
               onClick={handleLogout}
               className="flex items-center justify-center w-full px-4 py-2 bg-[#FF6767] text-white rounded-lg text-sm font-medium hover:bg-red-600"
@@ -188,7 +173,7 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         </aside>
 
-        {/* Overlay for mobile sidebar when open */}
+        {/* Mobile Overlay */}
         {isMobile && sidebarOpen && (
           <div
             className="fixed inset-0 bg-black opacity-30 z-10"
@@ -197,12 +182,8 @@ const Layout = ({ children }: LayoutProps) => {
           />
         )}
 
-        {/* Main content */}
-        <main
-          className={`flex-1 p-6 md:p-12 overflow-y-auto ${
-            isMobile ? "mt-[100px]" : ""
-          }`}
-        >
+        {/* Main Content */}
+        <main className={`flex-1 p-4 md:p-8 overflow-y-auto ${isMobile ? "mt-[80px]" : ""}`}>
           {children}
         </main>
       </div>
