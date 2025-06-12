@@ -41,7 +41,7 @@ const LoginForm = () => {
       setRedirecting(true); // show success loading popup
       setTimeout(() => {
         navigate('./dashboard');
-      }, 1200); // slight delay so user sees the popup
+      }, 10); // slight delay so user sees the popup
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
