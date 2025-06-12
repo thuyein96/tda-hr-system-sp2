@@ -48,6 +48,13 @@ const LoginForm = () => {
       setLoading(false); // stop button loading state
     }
   };
+  if (loading) {
+    return (
+ <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 mt-20 text-center">
+        <p className="text-gray-700">Logging in...</p>
+      </div>
+    );
+  }
 
   // ✅ Show this only after successful login
   if (redirecting) {
