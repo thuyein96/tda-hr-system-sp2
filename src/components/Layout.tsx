@@ -1,169 +1,169 @@
-
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Search, User, LogOut } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Search, LogOut, ChevronDown } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
+const translations = {
+  English: {
+    sidebar: [
+      { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+      { path: '/employee', label: 'Employee', icon: '🧑‍💼' },
+      { path: '/worklog', label: 'Work Log', icon: '🕒' },
+      { path: '/payroll', label: 'Payroll', icon: '💵' },
+      { path: '/expense-income', label: 'Expense & Income', icon: '💳' },
+      { path: '/reports', label: 'Reports', icon: '📈' },
+    ],
+    searchPlaceholder: 'Search',
+    logout: 'Log out',
+  },
+  Burmese: {
+    sidebar: [
+      { path: '/dashboard', label: 'ပန်းတိုင်စာမျက်နှာ', icon: '📊' },
+      { path: '/employee', label: 'ဝန်ထမ်း', icon: '🧑‍💼' },
+      { path: '/worklog', label: 'အလုပ်မှတ်တမ်း', icon: '🕒' },
+      { path: '/payroll', label: 'လစာ', icon: '💵' },
+      { path: '/expense-income', label: 'ကုန်ကျစရိတ်နှင့် ဝင်ငွေ', icon: '💳' },
+      { path: '/reports', label: 'အစီရင်ခံစာများ', icon: '📈' },
+    ],
+    searchPlaceholder: 'ရှာဖွေပါ',
+    logout: 'ထွက်ရန်',
+  },
+};
+
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [language, setLanguage] = useState<'English' | 'Burmese'>('English');
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const sidebarItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
-    { path: '/employee', label: 'Employee', icon: '👤' },
-    { path: '/worklog', label: 'Work Log', icon: '📋' },
-    { path: '/payroll', label: 'Payroll', icon: '💰' },
-    { path: '/expense-income', label: 'Expense & Income', icon: '📊' },
-    { path: '/reports', label: 'Reports', icon: '📈' },
-  ];
+  const sidebarItems = translations[language].sidebar;
+
+  const today = new Date();
+  const day = today.toLocaleDateString(language === 'English' ? 'en-US' : 'my-MM', { weekday: 'long' });
+  const date = today.toLocaleDateString(language === 'English' ? 'en-GB' : 'my-MM');
+
+  const handleLogout = () => {
+    // Perform logout logic here (e.g., clear tokens)
+    navigate('/login');
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (lang: 'English' | 'Burmese') => {
+    setLanguage(lang);
+    setOpen(false);
+  };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif', backgroundColor: '#f8f9fa' }}>
-      {/* Sidebar */}
-      <div style={{
-        width: '280px',
-        backgroundColor: 'white',
-        borderRight: '1px solid #e5e7eb',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        {/* Logo */}
-        <div style={{ padding: '24px 24px 32px 24px' }}>
-          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
-            <span style={{ color: '#ef4444' }}>TDA</span>
-            <span style={{ color: '#333' }}>: HR</span>
-          </div>
+    <div className="flex flex-col min-h-screen font-poppins bg-white overflow-hidden">
+      {/* Header */}
+      <header className="flex justify-between items-center h-[100px] px-6 md:px-12 shadow-md bg-[#F8F8F8]">
+        <div className="text-[32px] font-semibold font-inter">
+          <span className="text-[#FF6767]">TDA</span><span className="text-black">: HR</span>
         </div>
 
-        {/* Sidebar Navigation */}
-        <nav style={{ flex: 1, padding: '0 24px' }}>
-          {sidebarItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '12px 16px',
-                marginBottom: '8px',
-                textDecoration: 'none',
-                color: location.pathname === item.path ? '#ef4444' : '#6b7280',
-                backgroundColor: 'transparent',
-                borderRadius: '8px',
-                borderLeft: location.pathname === item.path ? '3px solid #ef4444' : '3px solid transparent',
-                fontSize: '14px',
-                fontWeight: location.pathname === item.path ? '500' : '400'
-              }}
+        <div className="flex items-center gap-6">
+          {/* Search */}
+          <div className="hidden md:flex items-center w-[261px] px-4 py-[13px] rounded-[10px] outline outline-1 outline-[#FF676733]">
+            <Search size={20} className="text-[#FF6767] mr-2" />
+            <input
+              type="text"
+              placeholder={translations[language].searchPlaceholder}
+              className="bg-transparent placeholder-[#16151C33] text-[16px] font-light leading-[24px] focus:outline-none w-full"
+            />
+          </div>
+
+          {/* Language Dropdown */}
+          <div
+            ref={dropdownRef}
+            className="hidden md:flex items-center justify-center h-[50px] px-4 rounded-[10px] outline outline-1 outline-[#FF676733] gap-2 relative cursor-pointer select-none"
+          >
+            <span className="bg-transparent text-[#16151C] text-[14px] font-light leading-[22px]">
+              {language}
+            </span>
+            <ChevronDown
+              size={20}
+              className="text-[#16151C]"
+              onClick={() => setOpen(!open)}
+            />
+
+            {open && (
+              <div className="absolute top-full mt-1 right-0 bg-white border border-gray-300 rounded shadow-md w-[120px] z-10">
+                <div
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#16151C] text-[14px]"
+                  onClick={() => handleSelect('English')}
+                >
+                  English
+                </div>
+                <div
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#16151C] text-[14px]"
+                  onClick={() => handleSelect('Burmese')}
+                >
+                  Burmese
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Date */}
+          <div className="text-right">
+            <div className="text-[15px] text-black font-medium font-inter">{day}</div>
+            <div className="text-[14px] text-[#3ABEFF] font-medium font-inter">{date}</div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <aside className="hidden sm:flex flex-col w-[260px] bg-[#FAFAFA] pt-8 px-6 border-r border-gray-200">
+          <nav className="flex-1 space-y-2">
+            {sidebarItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`relative flex items-center w-full h-[50px] pl-4 rounded-r-[10px] transition-all duration-150 ${
+                  location.pathname === item.path
+                    ? 'bg-[rgba(255,103,103,0.05)] text-[#FF6767] font-semibold'
+                    : 'text-[#16151C] font-light hover:bg-gray-100'
+                }`}
+              >
+                <div
+                  className={`absolute left-0 top-0 h-full w-[3px] rounded-[10px] ${
+                    location.pathname === item.path ? 'bg-[#FF6767]' : 'opacity-0'
+                  }`}
+                />
+                <span className="text-lg mr-4">{item.icon}</span>
+                <span className="text-[16px] leading-[24px]">{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          <div className="p-6">
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center w-full px-4 py-2 bg-[#FF6767] text-white rounded-lg text-sm font-medium hover:bg-red-600"
             >
-              <span style={{ marginRight: '12px', fontSize: '16px' }}>{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Logout Button */}
-        <div style={{ padding: '24px' }}>
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            padding: '12px',
-            backgroundColor: '#ef4444',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '14px',
-            cursor: 'pointer',
-            fontWeight: '500'
-          }}>
-            <LogOut size={16} style={{ marginRight: '8px' }} />
-            Log out
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Top Bar */}
-        <header style={{
-          height: '80px',
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 32px'
-        }}>
-          {/* Logo (Mobile) */}
-          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
-            <span style={{ color: '#ef4444' }}>TDA</span>
-            <span style={{ color: '#333' }}>: HR</span>
+              <LogOut size={16} className="mr-2" />
+              {translations[language].logout}
+            </button>
           </div>
+        </aside>
 
-          {/* Right side */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            {/* Search */}
-            <div style={{ position: 'relative' }}>
-              <Search size={20} style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: '#9ca3af'
-              }} />
-              <input
-                type="text"
-                placeholder="Search"
-                style={{
-                  padding: '10px 16px 10px 48px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '24px',
-                  fontSize: '14px',
-                  width: '300px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-
-            {/* Language */}
-            <select style={{
-              padding: '8px 16px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              backgroundColor: 'white'
-            }}>
-              <option>English</option>
-            </select>
-
-            {/* Date */}
-            <div style={{ textAlign: 'right', fontSize: '12px', color: '#6b7280' }}>
-              <div style={{ fontWeight: '500' }}>Tuesday</div>
-              <div>13/05/2025</div>
-            </div>
-
-            {/* User Avatar */}
-            <div style={{
-              width: '40px',
-              height: '40px',
-              backgroundColor: '#ef4444',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}>
-              <User size={20} />
-            </div>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main style={{ flex: 1 }}>
+        {/* Main Content */}
+        <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
           {children}
         </main>
       </div>
