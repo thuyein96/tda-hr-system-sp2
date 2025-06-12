@@ -20,16 +20,25 @@ const Layout = ({ children }: LayoutProps) => {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial, sans-serif', backgroundColor: '#f8f9fa' }}>
       {/* Sidebar */}
       <div style={{
         width: '280px',
-        backgroundColor: '#f8f9fa',
-        borderRight: '1px solid #e9ecef',
-        padding: '20px 0'
+        backgroundColor: 'white',
+        borderRight: '1px solid #e5e7eb',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
+        {/* Logo */}
+        <div style={{ padding: '24px 24px 32px 24px' }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+            <span style={{ color: '#ef4444' }}>TDA</span>
+            <span style={{ color: '#333' }}>: HR</span>
+          </div>
+        </div>
+
         {/* Sidebar Navigation */}
-        <nav style={{ padding: '0 20px' }}>
+        <nav style={{ flex: 1, padding: '0 24px' }}>
           {sidebarItems.map((item) => (
             <Link
               key={item.path}
@@ -40,11 +49,12 @@ const Layout = ({ children }: LayoutProps) => {
                 padding: '12px 16px',
                 marginBottom: '8px',
                 textDecoration: 'none',
-                color: location.pathname === item.path ? '#dc3545' : '#6c757d',
-                backgroundColor: location.pathname === item.path ? '#fff5f5' : 'transparent',
+                color: location.pathname === item.path ? '#ef4444' : '#6b7280',
+                backgroundColor: 'transparent',
                 borderRadius: '8px',
-                borderLeft: location.pathname === item.path ? '3px solid #dc3545' : '3px solid transparent',
-                fontSize: '14px'
+                borderLeft: location.pathname === item.path ? '3px solid #ef4444' : '3px solid transparent',
+                fontSize: '14px',
+                fontWeight: location.pathname === item.path ? '500' : '400'
               }}
             >
               <span style={{ marginRight: '12px', fontSize: '16px' }}>{item.icon}</span>
@@ -54,19 +64,20 @@ const Layout = ({ children }: LayoutProps) => {
         </nav>
 
         {/* Logout Button */}
-        <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px' }}>
+        <div style={{ padding: '24px' }}>
           <button style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             width: '100%',
             padding: '12px',
-            backgroundColor: '#dc3545',
+            backgroundColor: '#ef4444',
             color: 'white',
             border: 'none',
             borderRadius: '8px',
             fontSize: '14px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            fontWeight: '500'
           }}>
             <LogOut size={16} style={{ marginRight: '8px' }} />
             Log out
@@ -78,65 +89,68 @@ const Layout = ({ children }: LayoutProps) => {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Top Bar */}
         <header style={{
-          height: '70px',
+          height: '80px',
           backgroundColor: 'white',
-          borderBottom: '1px solid #e9ecef',
+          borderBottom: '1px solid #e5e7eb',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px'
+          padding: '0 32px'
         }}>
-          {/* Logo */}
+          {/* Logo (Mobile) */}
           <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
-            <span style={{ color: '#dc3545' }}>TDA</span>
+            <span style={{ color: '#ef4444' }}>TDA</span>
             <span style={{ color: '#333' }}>: HR</span>
           </div>
 
           {/* Right side */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             {/* Search */}
             <div style={{ position: 'relative' }}>
               <Search size={20} style={{
                 position: 'absolute',
-                left: '12px',
+                left: '16px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#6c757d'
+                color: '#9ca3af'
               }} />
               <input
                 type="text"
                 placeholder="Search"
                 style={{
-                  padding: '8px 12px 8px 40px',
-                  border: '1px solid #e9ecef',
-                  borderRadius: '20px',
+                  padding: '10px 16px 10px 48px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '24px',
                   fontSize: '14px',
-                  width: '200px'
+                  width: '300px',
+                  outline: 'none'
                 }}
               />
             </div>
 
             {/* Language */}
             <select style={{
-              padding: '6px 12px',
-              border: '1px solid #e9ecef',
-              borderRadius: '6px',
-              fontSize: '14px'
+              padding: '8px 16px',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              fontSize: '14px',
+              outline: 'none',
+              backgroundColor: 'white'
             }}>
               <option>English</option>
             </select>
 
             {/* Date */}
-            <div style={{ textAlign: 'right', fontSize: '12px', color: '#6c757d' }}>
-              <div>Tuesday</div>
+            <div style={{ textAlign: 'right', fontSize: '12px', color: '#6b7280' }}>
+              <div style={{ fontWeight: '500' }}>Tuesday</div>
               <div>13/05/2025</div>
             </div>
 
             {/* User Avatar */}
             <div style={{
-              width: '36px',
-              height: '36px',
-              backgroundColor: '#dc3545',
+              width: '40px',
+              height: '40px',
+              backgroundColor: '#ef4444',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -149,11 +163,7 @@ const Layout = ({ children }: LayoutProps) => {
         </header>
 
         {/* Page Content */}
-        <main style={{
-          flex: 1,
-          backgroundColor: '#f8f9fa',
-          padding: '24px'
-        }}>
+        <main style={{ flex: 1 }}>
           {children}
         </main>
       </div>
