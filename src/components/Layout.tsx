@@ -1,3 +1,4 @@
+// Layout.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, LogOut, ChevronDown, Menu, X } from "lucide-react";
@@ -188,13 +189,15 @@ const LayoutContent = ({ children }: LayoutProps) => {
       <div className="flex flex-1" style={{ marginTop: `${headerHeight}px` }}>
         {/* Sidebar */}
         <aside
+          // Adjusted `top` and `height` for mobile sidebar to account for header
           className={`${
             isMobile
-              ? `fixed top-0 left-0 h-screen w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200 z-20 transform transition-transform duration-300 ${
+              ? `fixed left-0 h-screen w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200 z-20 transform transition-transform duration-300 overflow-y-auto ${ // Added overflow-y-auto
                   sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 }`
               : "hidden sm:flex flex-col w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200"
           }`}
+          style={isMobile ? { top: `${headerHeight}px`, height: `calc(100vh - ${headerHeight}px)` } : {}} // Dynamic top and height
         >
           <nav className="flex-1 space-y-2">
             {sidebarItems.map((item) => (
