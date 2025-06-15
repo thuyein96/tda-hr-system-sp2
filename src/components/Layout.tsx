@@ -2,47 +2,24 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, LogOut, ChevronDown, Menu, X } from "lucide-react";
 import { useIsMobile } from "../hooks/use-mobile"; // Update if path differs
+import { LanguageProvider, useLanguage } from "../contexts/LanguageContext"; // Import LanguageProvider and useLanguage
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const translations = {
-  English: {
-    sidebar: [
-      { path: "/dashboard", label: "Dashboard", icon: "📊" },
-      { path: "/employee", label: "Employee", icon: "🧑‍💼" },
-      { path: "/worklog", label: "Work Log", icon: "🕒" },
-      { path: "/payroll", label: "Payroll", icon: "💵" },
-      { path: "/expense-income", label: "Expense & Income", icon: "💳" },
-      { path: "/reports", label: "Reports", icon: "📈" },
-    ],
-    searchPlaceholder: "Search",
-    logout: "Log out",
-  },
-  Burmese: {
-    sidebar: [
-      { path: "/dashboard", label: "ပန်းတိုင်စာမျက်နှာ", icon: "📊" },
-      { path: "/employee", label: "ဝန်ထမ်း", icon: "🧑‍💼" },
-      { path: "/worklog", label: "အလုပ်မှတ်တမ်း", icon: "🕒" },
-      { path: "/payroll", label: "လစာ", icon: "💵" },
-      { path: "/expense-income", label: "ကုန်ကျစရိတ်နှင့် ဝင်ငွေ", icon: "💳" },
-      { path: "/reports", label: "အစီရင်ခံစာများ", icon: "📈" },
-    ],
-    searchPlaceholder: "ရှာဖွေပါ",
-    logout: "ထွက်ရန်",
-  },
-};
-
-const Layout = ({ children }: LayoutProps) => {
+// LayoutContent is separated to allow LanguageProvider to wrap it
+const LayoutContent = ({ children }: LayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [language, setLanguage] = useState<"English" | "Burmese">("English");
+  // Get language state and translations from the LanguageContext
+  const { language, setLanguage, translations, allTranslations } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>(""); // State for search query
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const sidebarItems = translations[language].sidebar;
+  const sidebarItems = translations.sidebar; // Use translations from context
   const isMobile = useIsMobile();
 
   const today = new Date();
@@ -52,7 +29,8 @@ const Layout = ({ children }: LayoutProps) => {
   const date = today.toLocaleDateString(language === "English" ? "en-GB" : "my-MM");
 
   const handleLogout = () => {
-    navigate("/");
+    // Implement your actual logout logic here (e.g., clear token, clear user session)
+    navigate("/"); // Redirect to login page
   };
 
   useEffect(() => {
@@ -70,6 +48,9 @@ const Layout = ({ children }: LayoutProps) => {
     setDropdownOpen(false);
   };
 
+  // Removed setSearchQuery("") from this useEffect.
+  // The search query will now persist across route changes,
+  // allowing a more "global" search feel that each page can interpret.
   useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false);
@@ -103,8 +84,10 @@ const Layout = ({ children }: LayoutProps) => {
             <Search size={20} className="text-[#FF6767] mr-2" />
             <input
               type="text"
-              placeholder={translations[language].searchPlaceholder}
+              placeholder={translations.searchPlaceholder} // Use translations from context
               className="bg-transparent placeholder-[#16151C33] text-[16px] font-light leading-[24px] focus:outline-none w-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
@@ -180,7 +163,7 @@ const Layout = ({ children }: LayoutProps) => {
               className="flex items-center justify-center w-full px-4 py-2 bg-[#FF6767] text-white rounded-lg text-sm font-medium hover:bg-red-600"
             >
               <LogOut size={16} className="mr-2" />
-              {translations[language].logout}
+              {translations.logout} {/* Use translations from context */}
             </button>
           </div>
         </aside>
@@ -195,12 +178,30 @@ const Layout = ({ children }: LayoutProps) => {
         )}
 
         {/* Main Content */}
-        <main className={`flex-1 p-4 md:p-8 overflow-y-auto ${isMobile ? "mt-[80px]" : ""}`}>
-          {children}
+        <main className={`flex-1 px-4 pb-4 md:px-8 md:pb-8 pt-2 md:pt-4 overflow-y-auto bg-gray-50 max-w-7xl mx-auto ${isMobile ? "mt-[80px]" : ""}`}>
+          {/* React.cloneElement allows passing props to children that are React elements */}
+          {React.Children.map(children, child => {
+            if (React.isValidElement(child)) {
+              // Pass current path and search query to child components
+              // Language and translations are now provided via context, so no need to pass here
+              return React.cloneElement(child as React.ReactElement<any>, {
+                currentPath: location.pathname,
+                searchQuery: searchQuery,
+              });
+            }
+            return child;
+          })}
         </main>
       </div>
     </div>
   );
 };
+
+// Wrap the LayoutContent with LanguageProvider
+const Layout = ({ children }: LayoutProps) => (
+  <LanguageProvider>
+    <LayoutContent>{children}</LayoutContent>
+  </LanguageProvider>
+);
 
 export default Layout;
