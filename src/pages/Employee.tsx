@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Users, Plus, ChevronLeft, ChevronRight, ChevronDown, Check, X, Edit, Trash2 } from 'lucide-react';
-
 import { useLanguage } from '../contexts/LanguageContext';
 
 // -------------------------------------------------------------------------
@@ -12,9 +11,8 @@ interface EmployeeData {
   employeeId: string;
   phone: string;
   role: string;
-  joinDate: string; // YYYY-MM-DD format
+  joinDate: string; // MM-DD format
   status: 'Active' | 'On leave';
-  baseRate: string;
 }
 
 // -------------------------------------------------------------------------
@@ -36,7 +34,6 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
 
   // State for form inputs, initialized from employeeToEdit if editing
   const [fullName, setFullName] = useState(employeeToEdit?.name || '');
-  const [baseRate, setBaseRate] = useState(employeeToEdit?.baseRate || '');
   const [phoneNumber, setPhoneNumber] = useState(employeeToEdit?.phone || '');
   const [role, setRole] = useState(employeeToEdit?.role || '');
   const [joinDate, setJoinDate] = useState(employeeToEdit?.joinDate || '');
@@ -46,7 +43,6 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
   useEffect(() => {
     if (isOpen) {
       setFullName(employeeToEdit?.name || '');
-      setBaseRate(employeeToEdit?.baseRate || '');
       setPhoneNumber(employeeToEdit?.phone || '');
       setRole(employeeToEdit?.role || '');
       setJoinDate(employeeToEdit?.joinDate || '');
@@ -81,7 +77,6 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
       id,
       employeeId,
       name: fullName,
-      baseRate,
       phone: phoneNumber,
       role,
       joinDate,
@@ -119,21 +114,13 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
               required
             />
           </div>
-          <div className="flex gap-4">
-            <input
-              type="text"
-              placeholder={modalTranslations.baseRatePlaceholder}
-              value={baseRate}
-              onChange={(e) => setBaseRate(e.target.value)}
-              className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-              required
-            />
+          <div>
             <input
               type="text"
               placeholder={modalTranslations.phoneNumberPlaceholder}
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
               required
             />
           </div>
@@ -389,22 +376,21 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   const { language, translations } = useLanguage();
   const employeePageTranslations = translations.employeePage;
 
-  // This is now a CONST array. Changes here won't be reflected in UI
   const allEmployees: EmployeeData[] = [
-    { id: '1', name: 'Kyaw', employeeId: 'E-01', phone: '09-5120045', role: 'Plastic producer', joinDate: '2020-04-29', status: 'Active', baseRate: '25000' },
-    { id: '2', name: 'Soe', employeeId: 'E-02', phone: '09-1234564', role: 'Plastic checker', joinDate: '2020-05-20', status: 'On leave', baseRate: '22000' },
-    { id: '3', name: 'Thant', employeeId: 'E-11', phone: '09-1234565', role: 'Plastic checker', joinDate: '2020-05-21', status: 'Active', baseRate: '22500' },
-    { id: '4', name: 'Thin', employeeId: 'E-12', phone: '09-1246634', role: 'Plastic checker', joinDate: '2020-05-25', status: 'Active', baseRate: '23000' },
-    { id: '5', name: 'Htet', employeeId: 'E-14', phone: '09-57341162', role: 'Plastic checker', joinDate: '2020-05-27', status: 'Active', baseRate: '21000' },
-    { id: '6', name: 'Aung', employeeId: 'E-04', phone: '09-34571234', role: 'Plastic Producer', joinDate: '2020-07-21', status: 'Active', baseRate: '26000' },
-    { id: '7', name: 'Yein', employeeId: 'E-05', phone: '09-41431556', role: 'N/A', joinDate: '2020-08-21', status: 'Active', baseRate: '20000' },
-    { id: '8', name: 'Myo', employeeId: 'E-06', phone: '09-12345678', role: 'Quality Control', joinDate: '2020-09-15', status: 'Active', baseRate: '24000' },
-    { id: '9', name: 'Zaw', employeeId: 'E-07', phone: '09-87654321', role: 'Machine Operator', joinDate: '2020-10-01', status: 'On leave', baseRate: '23500' },
-    { id: '10', name: 'Htoo', employeeId: 'E-08', phone: '09-11223344', role: 'Supervisor', joinDate: '2020-10-15', status: 'Active', baseRate: '30000' },
-    { id: '11', name: 'Naing', employeeId: 'E-09', phone: '09-55443322', role: 'Technician', joinDate: '2020-11-01', status: 'Active', baseRate: '27000' },
-    { id: '12', name: 'Thura', employeeId: 'E-10', phone: '09-99887766', role: 'Assistant', joinDate: '2020-11-15', status: 'On leave', baseRate: '19000' },
-    { id: '13', name: 'Kaung', employeeId: 'E-13', phone: '09-66554433', role: 'Operator', joinDate: '2020-12-01', status: 'Active', baseRate: '21500' },
-    { id: '14', name: 'Phyo', employeeId: 'E-15', phone: '09-33221144', role: 'Helper', joinDate: '2020-12-15', status: 'On leave', baseRate: '18000' },
+    { id: '1', name: 'Kyaw', employeeId: 'E-01', phone: '09-5120045', role: 'Plastic producer', joinDate: '2020-04-29', status: 'Active' },
+    { id: '2', name: 'Soe', employeeId: 'E-02', phone: '09-1234564', role: 'Plastic checker', joinDate: '2020-05-20', status: 'On leave' },
+    { id: '3', name: 'Thant', employeeId: 'E-11', phone: '09-1234565', role: 'Plastic checker', joinDate: '2020-05-21', status: 'Active' },
+    { id: '4', name: 'Thin', employeeId: 'E-12', phone: '09-1246634', role: 'Plastic checker', joinDate: '2020-05-25', status: 'Active' },
+    { id: '5', name: 'Htet', employeeId: 'E-14', phone: '09-57341162', role: 'Plastic checker', joinDate: '2020-05-27', status: 'Active' },
+    { id: '6', name: 'Aung', employeeId: 'E-04', phone: '09-34571234', role: 'Plastic Producer', joinDate: '2020-07-21', status: 'Active' },
+    { id: '7', name: 'Yein', employeeId: 'E-05', phone: '09-41431556', role: 'N/A', joinDate: '2020-08-21', status: 'Active' },
+    { id: '8', name: 'Myo', employeeId: 'E-06', phone: '09-12345678', role: 'Quality Control', joinDate: '2020-09-15', status: 'Active' },
+    { id: '9', name: 'Zaw', employeeId: 'E-07', phone: '09-87654321', role: 'Machine Operator', joinDate: '2020-10-01', status: 'On leave' },
+    { id: '10', name: 'Htoo', employeeId: 'E-08', phone: '09-11223344', role: 'Supervisor', joinDate: '2020-10-15', status: 'Active' },
+    { id: '11', name: 'Naing', employeeId: 'E-09', phone: '09-55443322', role: 'Technician', joinDate: '2020-11-01', status: 'Active' },
+    { id: '12', name: 'Thura', employeeId: 'E-10', phone: '09-99887766', role: 'Assistant', joinDate: '2020-11-15', status: 'On leave' },
+    { id: '13', name: 'Kaung', employeeId: 'E-13', phone: '09-66554433', role: 'Operator', joinDate: '2020-12-01', status: 'Active' },
+    { id: '14', name: 'Phyo', employeeId: 'E-15', phone: '09-33221144', role: 'Helper', joinDate: '2020-12-15', status: 'On leave' },
   ];
 
 
@@ -433,9 +419,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     setCurrentPage(page);
   };
 
-  // getStatusBadge is no longer needed directly; StatusChanger handles its own styling
-  // const getStatusBadge = (status: string) => { /* ... */ };
-
   const handleOpenAddModal = () => {
     setSelectedEmployeeForEdit(undefined);
     setIsAddModalOpen(true);
@@ -446,7 +429,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     setIsAddModalOpen(true);
   };
 
-  // Dummy function for saving/updating - just logs data
   const handleSaveEmployee = (employee: EmployeeData, isEditing: boolean) => {
     console.log(`[UI-ONLY] ${isEditing ? 'Saved' : 'Added'} Employee data (would send to backend):`, employee);
   };
@@ -456,7 +438,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     setIsDeleteConfirmModalOpen(true);
   };
 
-  // Dummy function for actual deletion - just logs the ID
   const handleExecuteDelete = (id: string) => {
     console.log(`[UI-ONLY] Executed deletion for employee ID: ${id} (would call backend delete API)`);
   };
@@ -464,30 +445,41 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   return (
     <div className="font-sans antialiased text-gray-800">
       <div className="space-y-4">
-        {/* Stats */}
-        <div className="bg-white rounded-2xl p-4 flex flex-col md:flex-row items-center justify-around gap-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+        {/* Stats Section */}
+        <div className="bg-white rounded-2xl p-4 flex flex-col md:flex-row items-center md:justify-evenly gap-4 md:gap-6 shadow-sm">
+          {/* Stat Item 1: Total Employees */}
+          {/* Added w-full for explicit full width on mobile */}
+          <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
+            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Users className="text-red-500 w-7 h-7" />
             </div>
+            {/* Removed 'text-center' from this div for better mobile readability */}
             <div>
               <p className="text-sm text-gray-500 font-medium">{employeePageTranslations.totalEmployee}</p>
               <p className="text-3xl font-bold mt-1">{totalEmployees}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+
+          {/* Stat Item 2: Active Employees */}
+          {/* Added w-full for explicit full width on mobile */}
+          <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
+            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Check className="text-green-500 w-7 h-7" />
             </div>
+            {/* Removed 'text-center' from this div for better mobile readability */}
             <div>
               <p className="text-sm text-gray-500 font-medium">{employeePageTranslations.active}</p>
               <p className="text-3xl font-bold mt-1">{activeEmployees}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+
+          {/* Stat Item 3: On Leave Employees */}
+          {/* Added w-full for explicit full width on mobile */}
+          <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
+            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
               <X className="text-red-500 w-7 h-7" />
             </div>
+            {/* Removed 'text-center' from this div for better mobile readability */}
             <div>
               <p className="text-sm text-gray-500 font-medium">{employeePageTranslations.onLeave}</p>
               <p className="text-3xl font-bold mt-1">{onLeaveEmployees}</p>
@@ -495,21 +487,24 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table Header/Actions */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+          {/* This div now controls responsive layout for title and actions */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
+            {/* All Employees Title */}
             <div>
               <h2 className="text-xl font-bold">{employeePageTranslations.allEmployees}</h2>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm cursor-pointer">
+            {/* Sort by and Add New Employee - wrapped for mobile stacking */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"> {/* Changed to flex-col on mobile, flex-row on small+ */}
+              <div className="flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm cursor-pointer w-full sm:w-auto"> {/* Added w-full for mobile */}
                 <span className="font-medium text-gray-700">{employeePageTranslations.sortBy}</span>
                 <span className="font-semibold text-gray-900">{employeePageTranslations.joinDate}</span>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </div>
               <button
                 onClick={handleOpenAddModal}
-                className="flex items-center gap-2 px-5 py-2 bg-[#EB5757] text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors"
+                className="flex items-center justify-center gap-2 px-5 py-2 bg-[#EB5757] text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors w-full sm:w-auto" // Added w-full for mobile
               >
                 <Plus className="w-4 h-4" />
                 {employeePageTranslations.addNewEmployee}
