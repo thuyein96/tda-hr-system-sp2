@@ -1,15 +1,15 @@
-// Layout.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, LogOut, ChevronDown, Menu, X } from "lucide-react";
-import { useIsMobile } from "../hooks/use-mobile";
-import { LanguageProvider, useLanguage } from "../contexts/LanguageContext";
+import { useIsMobile } from "../hooks/use-mobile"; // Assuming this hook exists
+import { LanguageProvider, useLanguage } from "../contexts/LanguageContext"; // Assuming this context exists
 
 interface LayoutProps {
   children: React.ReactNode;
+  setIsLoggedIn: (value: boolean) => void; // This prop is essential for logout functionality
 }
 
-const LayoutContent = ({ children }: LayoutProps) => {
+const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { language, setLanguage, translations, allTranslations } = useLanguage();
@@ -17,22 +17,26 @@ const LayoutContent = ({ children }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLElement>(null); // Ref to measure header height
+  const headerRef = useRef<HTMLElement>(null); // Ref to measure header height dynamically
 
-  const sidebarItems = translations.sidebar;
-  const isMobile = useIsMobile();
-  const [headerHeight, setHeaderHeight] = useState(80); // Default to desktop height, will be updated by useEffect
+  const sidebarItems = translations.sidebar; // Assuming translations.sidebar is correctly structured
+  const isMobile = useIsMobile(); // Custom hook to detect mobile view
+  const [headerHeight, setHeaderHeight] = useState(80); // Default desktop header height
 
+  // Date formatting for the header
   const today = new Date();
   const day = today.toLocaleDateString(language === "English" ? "en-US" : "my-MM", {
     weekday: "long",
   });
   const date = today.toLocaleDateString(language === "English" ? "en-GB" : "my-MM");
 
+  // Handles the logout action
   const handleLogout = () => {
-    navigate("/");
+    setIsLoggedIn(false); // Set global login status to false
+    navigate("/"); // Redirect to the login page
   };
 
+  // Effect to close language dropdown when clicking outside of it
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -43,7 +47,8 @@ const LayoutContent = ({ children }: LayoutProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Update header height state on mount and window resize
+  // Effect to update header height on mount and window resize
+  // This ensures the main content below the fixed header is always correctly positioned.
   useEffect(() => {
     const updateHeaderHeight = () => {
       if (headerRef.current) {
@@ -51,21 +56,19 @@ const LayoutContent = ({ children }: LayoutProps) => {
       }
     };
 
-    // Initial height calculation
-    updateHeaderHeight();
-
-    // Listen for resize events
-    window.addEventListener('resize', updateHeaderHeight);
+    updateHeaderHeight(); // Initial height calculation
+    window.addEventListener('resize', updateHeaderHeight); // Listen for resize events
     return () => window.removeEventListener('resize', updateHeaderHeight);
-  }, []); // Run once on mount, and then on resize, regardless of isMobile changes
+  }, []); // Empty dependency array means this runs once on mount and on unmount
 
-
+  // Effect to close the mobile sidebar automatically when navigating to a new route
   useEffect(() => {
-    if (isMobile) {
-      setSidebarOpen(false); // Close sidebar on mobile route change
+    if (isMobile && sidebarOpen) { // Only close if it's mobile and the sidebar is currently open
+      setSidebarOpen(false);
     }
-  }, [location.pathname, isMobile]);
+  }, [location.pathname, isMobile, sidebarOpen]); // Dependencies to re-run effect on route or mobile state change
 
+  // Handles selection of language from the dropdown
   const handleSelectLanguage = (lang: "English" | "Burmese") => {
     setLanguage(lang);
     setDropdownOpen(false);
@@ -75,14 +78,14 @@ const LayoutContent = ({ children }: LayoutProps) => {
     <div className="flex flex-col min-h-screen font-poppins bg-white overflow-hidden">
       {/* Fixed Header */}
       <header ref={headerRef} className="fixed top-0 left-0 w-full z-30 flex flex-col sm:flex-row sm:h-[80px] items-center justify-between px-4 md:px-8 border-b border-[#E5E5E5] bg-[#F8F8F8] py-3">
-        {/* Mobile: Logo & Hamburger. Desktop: Everything in one row handled by sm:flex-row below */}
+        {/* Mobile: Logo & Hamburger. Desktop: Logo and other elements on one line */}
         <div className="flex justify-between items-center w-full sm:w-auto">
           <div className="flex items-center text-[28px] font-semibold font-inter">
             <span className="text-[#FF6767]">TDA</span>
             <span className="text-black">: HR</span>
           </div>
 
-          {isMobile && (
+          {isMobile && ( // Show hamburger/X button only on mobile
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="md:hidden text-[#FF6767]"
@@ -96,7 +99,7 @@ const LayoutContent = ({ children }: LayoutProps) => {
         {/* Conditional rendering for mobile vs desktop header content */}
         {isMobile ? (
           // Mobile-specific layout for search and language: on the same line
-          <div className="flex items-center w-full mt-2 gap-2"> {/* New flex container for search and language */}
+          <div className="flex items-center w-full mt-2 gap-2"> {/* Container for search and language */}
             {/* Search Bar - Takes available width */}
             <div className="flex items-center flex-grow px-4 py-[8px] rounded-[10px] outline outline-1 outline-[#FF676733]">
               <Search size={20} className="text-[#FF6767] mr-2" />
@@ -189,21 +192,21 @@ const LayoutContent = ({ children }: LayoutProps) => {
       <div className="flex flex-1" style={{ marginTop: `${headerHeight}px` }}>
         {/* Sidebar */}
         <aside
-          // Adjusted `top` and `height` for mobile sidebar to account for header
           className={`${
             isMobile
-              ? `fixed left-0 h-screen w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200 z-20 transform transition-transform duration-300 overflow-y-auto ${ // Added overflow-y-auto
+              ? `fixed top-0 left-0 h-screen w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200 z-20 transform transition-transform duration-300 ${
                   sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 }`
               : "hidden sm:flex flex-col w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200"
           }`}
-          style={isMobile ? { top: `${headerHeight}px`, height: `calc(100vh - ${headerHeight}px)` } : {}} // Dynamic top and height
         >
           <nav className="flex-1 space-y-2">
             {sidebarItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
+                // Add onClick handler to close sidebar when a link is clicked on mobile
+                onClick={() => isMobile && setSidebarOpen(false)}
                 className={`relative flex items-center w-full h-[44px] pl-4 rounded-r-[10px] transition-all duration-150 ${
                   location.pathname === item.path
                     ? "bg-[rgba(255,103,103,0.05)] text-[#FF6767] font-semibold"
@@ -223,7 +226,7 @@ const LayoutContent = ({ children }: LayoutProps) => {
 
           <div className="p-4">
             <button
-              onClick={handleLogout}
+              onClick={handleLogout} // Calls the handleLogout function to log out
               className="flex items-center justify-center w-full px-4 py-2 bg-[#FF6767] text-white rounded-lg text-sm font-medium hover:bg-red-600"
             >
               <LogOut size={16} className="mr-2" />
@@ -240,7 +243,7 @@ const LayoutContent = ({ children }: LayoutProps) => {
           />
         )}
 
-        {/* Main Content Area */}
+        {/* Main Content Area: Padding is applied here for the entire content area */}
         <main className={`flex-1 p-4 md:p-8 overflow-y-auto bg-gray-50`}>
           {React.Children.map(children, child => {
             if (React.isValidElement(child)) {
@@ -257,9 +260,10 @@ const LayoutContent = ({ children }: LayoutProps) => {
   );
 };
 
-const Layout = ({ children }: LayoutProps) => (
+// Layout component, wrapping LayoutContent with LanguageProvider
+const Layout = ({ children, setIsLoggedIn }: LayoutProps) => (
   <LanguageProvider>
-    <LayoutContent>{children}</LayoutContent>
+    <LayoutContent setIsLoggedIn={setIsLoggedIn}>{children}</LayoutContent>
   </LanguageProvider>
 );
 
