@@ -3,12 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Your page components and general components
-import LoginPage from "@/pages/Index"; // This path should point to your login page component (e.g., src/pages/Index.tsx)
+import LoginPage from "@/pages/Index"; 
 import NotFound from "@/pages/NotFound"; // Your 404 page
-import Layout from "@/components/Layout"; // Your main application layout
+import Layout from "@/components/Layout"; // main application layout
 import Dashboard from "@/pages/Dashboard";
 import Employee from "@/pages/Employee";
 import WorkLog from "@/pages/WorkLog";
@@ -19,18 +19,43 @@ import Reports from "@/pages/Reports";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Authentication state managed at the top level of the application
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Initialize isLoggedIn state from localStorage.
+  // This function runs only once during the initial render.
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    try {
+      const storedValue = localStorage.getItem('isLoggedIn');
+      // localStorage stores values as strings, so we compare to the string 'true'
+      return storedValue === 'true';
+    } catch (error) {
+      // In case localStorage is not available (e.g., in some server-side rendering environments
+      // or if user privacy settings block it), default to false.
+      console.error("Failed to access localStorage during initialization:", error);
+      return false;
+    }
+  });
 
-  // ProtectedElement is a helper component defined inline.
-  // It checks the isLoggedIn state and either renders its children (protected content)
-  // or redirects the user to the login page.
+  // useEffect to synchronize isLoggedIn state with localStorage.
+  // This effect runs whenever the `isLoggedIn` state changes.
+  useEffect(() => {
+    try {
+      // Store the current boolean state as a string in localStorage
+      localStorage.setItem('isLoggedIn', String(isLoggedIn));
+    } catch (error) {
+      console.error("Failed to write to localStorage:", error);
+    }
+  }, [isLoggedIn]); // Dependency array: runs when isLoggedIn state updates
+
+  // ProtectedElement is an inline helper component.
+  // It conditionally renders its children (the protected content)
+  // or redirects to the login page if the user is not authenticated.
   const ProtectedElement: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!isLoggedIn) {
-      // If the user is not logged in, redirect them to the root path (login page)
+      // If not logged in, use Navigate to redirect to the root path ("/")
+      // `replace` prop ensures the current history entry is replaced,
+      // so the user can't easily go back to the protected page via the browser's back button.
       return <Navigate to="/" replace />;
     }
-    // If the user is logged in, render the content (the protected route's component)
+    // If logged in, render the child components (the actual content of the protected route)
     return <>{children}</>;
   };
 
@@ -42,20 +67,22 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             {/*
-              The Login Route:
-              - This route ("/") is NOT protected, so it's always accessible.
+              Login Route:
+              - This route ("/") is explicitly NOT protected. It's the entry point for authentication.
               - It renders the LoginPage component.
-              - It passes the `setIsLoggedIn` function to LoginPage, allowing LoginForm
-                (nested inside LoginPage) to update the global authentication state upon successful login.
+              - The `setIsLoggedIn` function is passed as a prop, allowing LoginForm (nested within LoginPage)
+                to update the global `isLoggedIn` state upon a successful login, which then triggers the
+                `useEffect` to store the session in localStorage.
             */}
             <Route path="/" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
 
             {/*
               Protected Routes:
-              - All routes defined below this point are wrapped by `ProtectedElement`.
-              - `ProtectedElement` acts as a guard, ensuring only logged-in users can access these paths.
-              - The `Layout` component wraps the actual page content (e.g., Dashboard, Employee).
-              - `setIsLoggedIn` is also passed to `Layout` to enable the "Logout" functionality within the app layout.
+              - All routes defined from here onwards are wrapped by `ProtectedElement`.
+              - `ProtectedElement` acts as a guard, ensuring only authenticated users can access these paths.
+              - Each protected route renders the `Layout` component, which provides the common UI (sidebar, header).
+              - `setIsLoggedIn` is also passed to `Layout` so that the "Logout" button in the sidebar
+                can change the `isLoggedIn` state (and thus `localStorage`), logging the user out.
             */}
 
             <Route
@@ -120,9 +147,9 @@ const App = () => {
             />
 
             {/*
-              The Not Found Route:
-              - This route ("*") catches any undefined paths.
-              - It's typically not protected, as it provides a fallback for invalid URLs.
+              Not Found Route:
+              - This route ("*") acts as a catch-all for any URL that doesn't match the defined routes.
+              - It's typically not protected, as its purpose is to show a "page not found" message.
             */}
             <Route path="*" element={<NotFound />} />
           </Routes>
