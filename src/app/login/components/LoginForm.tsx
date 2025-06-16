@@ -51,13 +51,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ setIsLoggedIn }) => {
       setRedirecting(true); // Show the full-screen "Logging you in..." message
       setIsLoggedIn(true); // 🎉 Crucial: Update the global authentication state in App.tsx!
 
-      // Introduce a small delay before navigating to allow the "Logging you in..." screen to be seen.
-      // After setIsLoggedIn(true), the ProtectedElement in App.tsx will automatically
-      // attempt to render the protected route, triggering navigation. The setTimeout ensures
-      // the loading screen is visible for at least a brief moment.
+      localStorage.setItem('token', data.token); // Store the token in localStorage for future requests
+      localStorage.setItem('user', JSON.stringify(data.user)); // Store user data in localStorage
+      // Optionally, you can also set the token in a global state or context if neede
       setTimeout(() => {
         navigate('/dashboard'); // Navigate to the dashboard after successful login
-      }, 10); // 10ms delay is minimal, adjust as needed for visual effect
+      }, 1); // Redirect to the dashboard after a short delay
 
     } catch (err: any) {
       // Catch any errors during the fetch operation or from the API response

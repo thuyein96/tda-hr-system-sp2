@@ -143,7 +143,6 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
               required
             />
           </div>
-
           <div>
             <p className="text-gray-700 mb-2">{modalTranslations.selectTypeLabel}</p>
             <div className="flex gap-6">
@@ -358,7 +357,7 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
 
 
 // -------------------------------------------------------------------------
-// Employee Component (Main Page - UI-focused)
+// Employee Component (Main Page - UI)
 // -------------------------------------------------------------------------
 interface EmployeeProps {
   currentPath?: string;
@@ -367,7 +366,7 @@ interface EmployeeProps {
 
 const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 7;
+  const itemsPerPage = 8;
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [employeeToDeleteDetails, setEmployeeToDeleteDetails] = useState<{ id: string, name: string } | null>(null);

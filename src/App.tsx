@@ -5,9 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
 
-// Your page components and general components
 import LoginPage from "@/pages/Index"; 
-import NotFound from "@/pages/NotFound"; // Your 404 page
+import NotFound from "@/pages/NotFound"; // 404 page
 import Layout from "@/components/Layout"; // main application layout
 import Dashboard from "@/pages/Dashboard";
 import Employee from "@/pages/Employee";
@@ -34,25 +33,19 @@ const App = () => {
     }
   });
 
-  // useEffect to synchronize isLoggedIn state with localStorage.
-  // This effect runs whenever the `isLoggedIn` state changes.
   useEffect(() => {
     try {
-      // Store the current boolean state as a string in localStorage
       localStorage.setItem('isLoggedIn', String(isLoggedIn));
     } catch (error) {
       console.error("Failed to write to localStorage:", error);
     }
-  }, [isLoggedIn]); // Dependency array: runs when isLoggedIn state updates
+  }, [isLoggedIn]); 
 
   // ProtectedElement is an inline helper component.
   // It conditionally renders its children (the protected content)
   // or redirects to the login page if the user is not authenticated.
   const ProtectedElement: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!isLoggedIn) {
-      // If not logged in, use Navigate to redirect to the root path ("/")
-      // `replace` prop ensures the current history entry is replaced,
-      // so the user can't easily go back to the protected page via the browser's back button.
       return <Navigate to="/" replace />;
     }
     // If logged in, render the child components (the actual content of the protected route)
