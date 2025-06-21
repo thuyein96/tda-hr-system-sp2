@@ -9,7 +9,7 @@ import LoginPage from "@/pages/Index";
 import NotFound from "@/pages/NotFound"; // 404 page
 import Layout from "@/components/Layout"; // main application layout
 import Dashboard from "@/pages/Dashboard";
-import Employee from "@/pages/Employee";
+import Employee from "@/pages/employee/Employee";
 import WorkLog from "@/pages/WorkLog";
 import Payroll from "@/pages/Payroll";
 import ExpenseIncome from "@/pages/ExpenseIncome";
