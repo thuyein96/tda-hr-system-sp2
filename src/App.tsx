@@ -8,12 +8,12 @@ import React, { useState, useEffect } from 'react';
 import LoginPage from "@/pages/Index"; 
 import NotFound from "@/pages/NotFound"; // 404 page
 import Layout from "@/components/Layout"; // main application layout
-import Dashboard from "@/pages/Dashboard";
+import Dashboard from "@/pages/dashboard/Dashboard";
 import Employee from "@/pages/employee/Employee";
-import WorkLog from "@/pages/WorkLog";
-import Payroll from "@/pages/Payroll";
-import ExpenseIncome from "@/pages/ExpenseIncome";
-import Reports from "@/pages/Reports";
+import WorkLog from "@/pages/worklog/WorkLog";
+import Payroll from "@/pages/payroll/Payroll";
+import ExpenseIncome from "@/pages/expenseincome/ExpenseIncome";
+import Reports from "@/pages/reports/Reports";
 
 const queryClient = new QueryClient();
 

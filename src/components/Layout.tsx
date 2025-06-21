@@ -1,10 +1,27 @@
 // src/components/Layout.tsx
 
-import React, { useState, useRef, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect, useCallback } from "react"; // Add useCallback
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"; // Import useSearchParams
 import { Search, LogOut, ChevronDown, Menu, X } from "lucide-react";
 import { useIsMobile } from "../hooks/use-mobile";
 import { LanguageProvider, useLanguage } from "../contexts/LanguageContext";
+
+// Manual Burmese translations and number converter (as previously defined)
+const burmeseWeekdays = [
+  "တနင်္ဂနွေနေ့", "တနင်္လာနေ့", "အင်္ဂါနေ့", "ဗုဒ္ဓဟူးနေ့",
+  "ကြာသပတေးနေ့", "သောကြာနေ့", "စနေနေ့",
+];
+
+const burmeseMonths = [
+  "ဇန်နဝါရီ", "ဖေဖော်ဝါရီ", "မတ်", "ဧပြီ", "မေ", "ဇွန်",
+  "ဇူလိုင်", "ဩဂုတ်", "စက်တင်ဘာ", "အောက်တိုဘာ", "နိုဝင်ဘာ", "ဒီဇင်ဘာ",
+];
+
+const convertToBurmeseNumerals = (num: number): string => {
+  const burmeseDigits = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
+  return String(num).split('').map(digit => burmeseDigits[parseInt(digit, 10)]).join('');
+};
+
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,19 +34,33 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
   const { language, setLanguage, translations } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  // Replaced searchQuery with useSearchParams
+  const [searchParams, setSearchParams] = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
-  const isMobile = useIsMobile(); // ✅ Safe hook
+  const isMobile = useIsMobile();
   const sidebarItems = translations.sidebar;
   const [headerHeight, setHeaderHeight] = useState(80);
 
   const today = new Date();
-  const day = today.toLocaleDateString(language === "English" ? "en-US" : "my-MM", {
-    weekday: "long",
-  });
-  const date = today.toLocaleDateString(language === "English" ? "en-GB" : "my-MM");
+  let displayDay: string;
+  let displayDate: string;
+
+  if (language === "English") {
+    displayDay = today.toLocaleDateString("en-US", { weekday: "long" });
+    displayDate = today.toLocaleDateString("en-GB");
+  } else {
+    const dayOfWeek = today.getDay();
+    const month = today.getMonth();
+    const dateNum = today.getDate();
+    const yearNum = today.getFullYear();
+    displayDay = burmeseWeekdays[dayOfWeek];
+    displayDate = `${convertToBurmeseNumerals(dateNum)} ${burmeseMonths[month]} ${convertToBurmeseNumerals(yearNum)}`;
+  }
+
+  // Get current search query from URL
+  const currentSearchQuery = searchParams.get('q') || ''; // 'q' is a common query param name
 
   const handleLogout = () => {
     setIsLoggedIn(false);
@@ -61,7 +92,7 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
     if (isMobile && sidebarOpen) {
       setSidebarOpen(false);
     }
-  }, [location.pathname]);
+  }, [location.pathname, isMobile, sidebarOpen]);
 
   const handleBurgerClick = () => {
     setSidebarOpen((prev) => !prev);
@@ -71,6 +102,17 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
     setLanguage(lang);
     setDropdownOpen(false);
   };
+
+  // --- NEW: Handle search input change ---
+  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuery = e.target.value;
+    if (newQuery) {
+      setSearchParams({ q: newQuery }); // Set the 'q' query parameter
+    } else {
+      setSearchParams({}); // Remove 'q' query parameter if empty
+    }
+  }, [setSearchParams]);
+  // ----------------------------------------
 
   return (
     <div className="flex flex-col min-h-screen font-poppins bg-white overflow-hidden">
@@ -103,8 +145,8 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
               type="text"
               placeholder={translations.searchPlaceholder}
               className="bg-transparent placeholder-[#16151C33] text-[16px] font-light leading-[24px] focus:outline-none w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={currentSearchQuery} // Use currentSearchQuery from URL
+              onChange={handleSearchInputChange} // Use new handler
             />
           </div>
 
@@ -135,8 +177,8 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
 
           {!isMobile && (
             <div className="text-right">
-              <div className="text-[15px] text-black font-medium font-inter">{day}</div>
-              <div className="text-[14px] text-[#3ABEFF] font-medium font-inter">{date}</div>
+              <div className="text-[15px] text-black font-medium font-inter">{displayDay}</div>
+              <div className="text-[14px] text-[#3ABEFF] font-medium font-inter">{displayDate}</div>
             </div>
           )}
         </div>
@@ -159,7 +201,16 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
               <Link
                 key={item.path}
                 to={item.path}
-                onClick={() => isMobile && setSidebarOpen(false)}
+                // When navigating, ensure the search query is preserved in the URL
+                // by appending it to the new path.
+                onClick={() => {
+                  if (isMobile) setSidebarOpen(false);
+                  if (currentSearchQuery) {
+                    navigate({ pathname: item.path, search: `?q=${currentSearchQuery}` });
+                  } else {
+                    navigate(item.path);
+                  }
+                }}
                 className={`relative flex items-center w-full h-[44px] pl-4 rounded-r-[10px] transition-all duration-150 ${
                   location.pathname === item.path
                     ? "bg-[rgba(255,103,103,0.05)] text-[#FF6767] font-semibold"
@@ -202,7 +253,7 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
             React.isValidElement(child)
               ? React.cloneElement(child as React.ReactElement<any>, {
                   currentPath: location.pathname,
-                  searchQuery,
+                  searchQuery: currentSearchQuery, // Pass searchQuery from URL
                 })
               : child
           )}

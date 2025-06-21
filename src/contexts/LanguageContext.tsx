@@ -38,7 +38,7 @@ interface EmployeePageTranslations {
   onLeaveStatus: string;
   cancelButton: string;
   addButton: string;
-  // --- NEW EDIT/DELETE MODAL TRANSLATION KEYS (using ReactNode for flexibility) ---
+  // --- NEW EDIT/DELETE MODAL TRANSLATIONS ---
   editEmployeeTitle: ReactNode;
   saveChangesButton: ReactNode;
   confirmDeleteTitle: ReactNode;
@@ -47,13 +47,183 @@ interface EmployeePageTranslations {
   deleteButton: ReactNode;
 }
 
+// UPDATED: Define specific types for Work Log page translation structure
+interface WorkLogPageTranslations {
+  totalWorkLogs: string;
+  totalCompletedWorklogs: string;
+  totalQuantityProduced: string;
+  workLogsTitle: string;
+  sortBy: string;
+  date: string;
+  addNewWorkLog: string;
+  fullNameColumn: string;
+  employeeIdColumn: string;
+  dateColumn: string;
+  productRateColumn: string;
+  quantityColumn: string;
+  roleColumn: string;
+  statusColumn: string; // Changed from salaryColumn
+  noteColumn: string;
+  actionColumn: string;
+  showing: string;
+  of: string;
+  workLogs: string;
+  editButton: string;
+  deleteButton: string;
+  // Modal specific translations for WorkLog
+  addNewWorkLogTitle: string;
+  editWorkLogTitle: string;
+  fullNameLabel: string;
+  productRateLabel: string;
+  quantityLabel: string;
+  roleLabel: string;
+  dateLabel: string;
+  noteLabel: string;
+  notePlaceholder: string;
+  cancelButton: string;
+  addWorkLogButton: string;
+  saveChangesButton: string;
+  confirmDeleteTitle: string;
+  confirmDeleteMessage1: string;
+  confirmDeleteMessage2: string;
+  deleteButtonConfirm: string;
+  selectEmployee: string;
+  optional: string;
+  datePlaceholder: string;
+  // Status options translations
+  statusOnGoing: string;
+  statusCompleted: string;
+  statusRejected: string;
+  all: string; // Added 'All' for status filter dropdown
+}
+
+// UPDATED: Define specific types for Payroll page translation structure
+interface PayrollPageTranslations {
+  totalNetPayroll: string;
+  totalBonus: string;
+  totalDeduction: string;
+  allPayrollTitle: string;
+  payrollPeriodDisplay: string;
+  exportButton: string;
+  sortBy: string;
+  date: string;
+  fullNameColumn: string;
+  productRateColumn: string;
+  totalQuantityColumn: string;
+  totalSalaryColumn: string;
+  bonusDeductionColumn: string;
+  netSalaryColumn: string;
+  showing: string;
+  of: string;
+  payrollEntries: string;
+  none: string; // For "Bonus/Deduction" column when no bonus/deduction
+  // Bonus/Deduction Modal Translations
+  addBonusDeductionTitle: string;
+  type: string;
+  bonus: string;
+  deduction: string;
+  amount: string;
+  notePlaceholder: string;
+  optional: string;
+  cancelButton: string;
+  saveButton: string;
+  invalidAmount: string;
+  // Period selection translations
+  periodTypeLabel: string;
+  periodTypeDay: string;
+  periodTypeWeek: string;
+  periodTypeMonth: string;
+  periodTypeCustom: string;
+  startDateLabel: string;
+  endDateLabel: string;
+  applyFilterButton: string;
+  currentPeriod: string; // For displaying the selected period, e.g., "1/04/2020 - 1/04/2020"
+  // NEW: Paid Status translations
+  paidStatusColumn: string;
+  statusPaid: string;
+  statusUnpaid: string;
+}
+
+// UPDATED: Define specific types for Expense & Income page translation structure
+interface ExpenseIncomePageTranslations {
+  totalNetIncomeExpense: string;
+  totalIncome: string;
+  totalExpense: string;
+  incomeTab: string;
+  expenseTab: string;
+  sortBy: string;
+  amount: string; // Used for "Sort by: Amount"
+  addNewIncome: string;
+  addNewExpense: string;
+  incomeNameColumn: string;
+  expenseNameColumn: string;
+  amountColumn: string;
+  clientColumn: string;
+  paidToColumn: string; // Changed from categoryColumn to paidToColumn
+  dateColumn: string;
+  noteColumn: string;
+  actionColumn: string;
+  editButton: string;
+  deleteButton: string;
+  showing: string;
+  of: string;
+  incomeEntries: string;
+  expenseEntries: string;
+  na: string; // N/A for Note column
+  noEntriesFound: string;
+  // Modals
+  addNewIncomeTitle: string;
+  addNewExpenseTitle: string;
+  editIncomeTitle: string;
+  editExpenseTitle: string;
+  incomeNamePlaceholder: string;
+  expenseNamePlaceholder: string;
+  clientPlaceholder: string;
+  paidToPlaceholder: string; // Changed from categoryPlaceholder to paidToPlaceholder
+  notePlaceholder: string;
+  cancelButton: string;
+  addButton: string;
+  saveChangesButton: string;
+  optional: string;
+  invalidAmount: string;
+  confirmDeleteTitle: string;
+  confirmDeleteMessage1: string;
+  confirmDeleteMessage2: string;
+  deleteButtonConfirm: string;
+  // NEW: Period selection translations
+  periodTypeLabel: string;
+  periodTypeDay: string;
+  periodTypeWeek: string;
+  periodTypeMonth: string;
+  periodTypeCustom: string;
+  startDateLabel: string;
+  endDateLabel: string;
+  applyFilterButton: string;
+  currentPeriod: string; // For displaying the selected period, e.g., "1/04/2020 - 1/04/2020"
+  selectPeriod: string; // "Select period..."
+}
+
+
 // Full translations structure used by the context
 interface AppTranslations {
   sidebar: SidebarItem[];
   searchPlaceholder: string;
   logout: string;
-  employeePage: EmployeePageTranslations; // Nested object for employee page translations
-  // Add other page translations here as you expand your app
+  employeePage: EmployeePageTranslations;
+  workLogPage: WorkLogPageTranslations;
+  payrollPage: PayrollPageTranslations;
+  expenseIncomePage: ExpenseIncomePageTranslations; // NEW: Nested object for expense & income page translations
+  common: {
+    loading: string;
+    error: string;
+    sunday: string;
+    monday: string;
+    tuesday: string;
+    wednesday: string;
+    thursday: string;
+    friday: string;
+    saturday: string;
+  }
 }
 
 interface AllTranslationsCollection {
@@ -65,8 +235,8 @@ interface AllTranslationsCollection {
 interface LanguageContextType {
   language: "English" | "Burmese";
   setLanguage: Dispatch<SetStateAction<"English" | "Burmese">>;
-  translations: AppTranslations; // The currently selected language's translations
-  allTranslations: AllTranslationsCollection; // All available translations (useful if you need to display language names)
+  translations: AppTranslations;
+  allTranslations: AllTranslationsCollection;
 }
 
 // Global translation data
@@ -82,6 +252,17 @@ const allAppTranslations: AllTranslationsCollection = {
     ],
     searchPlaceholder: "Search",
     logout: "Log out",
+    common: {
+      loading: "Loading",
+      error: "Error",
+      sunday: "Sunday",
+      monday: "Monday",
+      tuesday: "Tuesday",
+      wednesday: "Wednesday",
+      thursday: "Thursday",
+      friday: "Friday",
+      saturday: "Saturday",
+    },
     employeePage: {
       totalEmployee: "Total Employee",
       active: "Active",
@@ -101,7 +282,7 @@ const allAppTranslations: AllTranslationsCollection = {
       statusColumn: "Status",
       actionColumn: "Action",
       editButton: "Edit",
-      // --- NEW MODAL TRANSLATIONS ---
+      // --- MODAL TRANSLATIONS ---
       addNewEmployeeTitle: "Add new employee",
       fullNamePlaceholder: "Full Name",
       baseRatePlaceholder: "Base rate",
@@ -113,13 +294,166 @@ const allAppTranslations: AllTranslationsCollection = {
       onLeaveStatus: "On Leave",
       cancelButton: "Cancel",
       addButton: "Add",
-      // --- NEW EDIT/DELETE MODAL TRANSLATIONS ---
+      // --- EDIT/DELETE MODAL TRANSLATIONS ---
       editEmployeeTitle: "Edit Employee",
       saveChangesButton: "Save Changes",
       confirmDeleteTitle: "Confirm Deletion",
       confirmDeleteMessage1: "Are you sure you want to delete",
       confirmDeleteMessage2: "? This action cannot be undone.",
       deleteButton: "Delete",
+    },
+    // UPDATED: Work Log Page Translations (Added 'all' key)
+    workLogPage: {
+      totalWorkLogs: "Total Work Logs",
+      totalCompletedWorklogs: "Total Completed Worklogs",
+      totalQuantityProduced: "Total Quantity Produced",
+      workLogsTitle: "Work Logs",
+      sortBy: "Sort by:",
+      date: "Date",
+      addNewWorkLog: "Add New Work Log",
+      fullNameColumn: "Full Name",
+      employeeIdColumn: "Employee ID",
+      dateColumn: "Date",
+      productRateColumn: "Product Rate",
+      quantityColumn: "Quantity",
+      roleColumn: "Role",
+      statusColumn: "Status",
+      noteColumn: "Note",
+      actionColumn: "Action",
+      showing: "Showing",
+      of: "of",
+      workLogs: "work logs",
+      editButton: "Edit",
+      deleteButton: "Delete",
+      // Modal specific translations for WorkLog
+      addNewWorkLogTitle: "Add New Work Log",
+      editWorkLogTitle: "Edit Work Log",
+      fullNameLabel: "Full Name",
+      productRateLabel: "Product Rate",
+      quantityLabel: "Quantity",
+      roleLabel: "Role",
+      dateLabel: "Date",
+      noteLabel: "Note (Optional)",
+      notePlaceholder: "Any additional notes...",
+      cancelButton: "Cancel",
+      addWorkLogButton: "Add Work Log",
+      saveChangesButton: "Save Changes",
+      confirmDeleteTitle: "Confirm Deletion",
+      confirmDeleteMessage1: "Are you sure you want to delete the work log entry for",
+      confirmDeleteMessage2: "? This action cannot be undone.",
+      deleteButtonConfirm: "Delete",
+      selectEmployee: "Select Employee",
+      optional: "Optional",
+      datePlaceholder: "YYYY-MM-DD",
+      // Status options translations
+      statusOnGoing: "On Going",
+      statusCompleted: "Completed",
+      statusRejected: "Rejected",
+      all: "All", // Added 'All' for status filter dropdown
+    },
+    // UPDATED: Payroll Page Translations (Added new keys for period selection and paid status)
+    payrollPage: {
+      totalNetPayroll: "Total Net Payroll",
+      totalBonus: "Total Bonus",
+      totalDeduction: "Total Deduction",
+      allPayrollTitle: "All Payroll",
+      payrollPeriodDisplay: "Payroll Period:",
+      exportButton: "Export",
+      sortBy: "Sort by:",
+      date: "Date",
+      fullNameColumn: "Full Name",
+      productRateColumn: "Product Rate",
+      totalQuantityColumn: "Total Quantity",
+      totalSalaryColumn: "Total Salary",
+      bonusDeductionColumn: "Bonus/Deduction",
+      netSalaryColumn: "Net Salary",
+      showing: "Showing",
+      of: "of",
+      payrollEntries: "payroll entries",
+      none: "None",
+      // Bonus/Deduction Modal Translations
+      addBonusDeductionTitle: "Add Bonus/Deduction",
+      type: "Type",
+      bonus: "Bonus",
+      deduction: "Deduction",
+      amount: "Amount",
+      notePlaceholder: "Reason for bonus/deduction (optional)",
+      optional: "Optional",
+      cancelButton: "Cancel",
+      saveButton: "Save",
+      invalidAmount: "Please enter a valid positive amount.",
+      // Period selection translations
+      periodTypeLabel: "Select Period:",
+      periodTypeDay: "Day",
+      periodTypeWeek: "Week",
+      periodTypeMonth: "Month",
+      periodTypeCustom: "Custom Range",
+      startDateLabel: "Start Date:",
+      endDateLabel: "End Date:",
+      applyFilterButton: "Apply Filter",
+      currentPeriod: "Current Period:",
+      // NEW: Paid Status translations
+      paidStatusColumn: "Paid Status",
+      statusPaid: "Paid",
+      statusUnpaid: "Unpaid",
+    },
+    // UPDATED: Expense & Income Page Translations (Updated column/placeholder keys)
+    expenseIncomePage: {
+      totalNetIncomeExpense: "Total Income & Expense",
+      totalIncome: "Total Income",
+      totalExpense: "Total Expense",
+      incomeTab: "Income",
+      expenseTab: "Expense",
+      sortBy: "Sort by:",
+      amount: "Amount", // for "Sort by: Amount"
+      addNewIncome: "Add New Income",
+      addNewExpense: "Add New Expense",
+      incomeNameColumn: "Income Name",
+      expenseNameColumn: "Expense Name",
+      amountColumn: "Amount",
+      clientColumn: "Client",
+      paidToColumn: "Paid to", // Changed from Category to Paid to
+      dateColumn: "Date",
+      noteColumn: "Note",
+      actionColumn: "Action",
+      editButton: "Edit",
+      deleteButton: "Delete",
+      showing: "Showing",
+      of: "of",
+      incomeEntries: "income entries",
+      expenseEntries: "expense entries",
+      na: "N/A",
+      noEntriesFound: "No entries found for this period/filter.",
+      // Modals
+      addNewIncomeTitle: "Add New Income",
+      addNewExpenseTitle: "Add New Expense",
+      editIncomeTitle: "Edit Income",
+      editExpenseTitle: "Edit Expense",
+      incomeNamePlaceholder: "Income Name",
+      expenseNamePlaceholder: "Expense Name",
+      clientPlaceholder: "Client",
+      paidToPlaceholder: "Paid to", // Changed from Category to Paid to
+      notePlaceholder: "Additional Note...",
+      cancelButton: "Cancel",
+      addButton: "Add",
+      saveChangesButton: "Save Changes",
+      optional: "Optional",
+      invalidAmount: "Please enter a valid positive amount.",
+      confirmDeleteTitle: "Confirm Deletion",
+      confirmDeleteMessage1: "Are you sure you want to delete",
+      confirmDeleteMessage2: "? This action cannot be undone.",
+      deleteButtonConfirm: "Delete",
+      // NEW: Period selection translations
+      periodTypeLabel: "Select Period:",
+      periodTypeDay: "Day",
+      periodTypeWeek: "Week",
+      periodTypeMonth: "Month",
+      periodTypeCustom: "Custom Range",
+      startDateLabel: "Start Date:",
+      endDateLabel: "End Date:",
+      applyFilterButton: "Apply Filter",
+      currentPeriod: "Current Period:",
+      selectPeriod: "Select period...", // For initial display of currentPeriod
     },
   },
   Burmese: {
@@ -133,6 +467,17 @@ const allAppTranslations: AllTranslationsCollection = {
     ],
     searchPlaceholder: "ရှာဖွေပါ",
     logout: "ထွက်ရန်",
+    common: {
+      loading: "တင်နေသည်",
+      error: "အမှား",
+      sunday: "တနင်္ဂနွေ",
+      monday: "တနင်္လာ",
+      tuesday: "အင်္ဂါ",
+      wednesday: "ဗုဒ္ဓဟူး",
+      thursday: "ကြာသပတေး",
+      friday: "သောကြာ",
+      saturday: "စနေ",
+    },
     employeePage: {
       totalEmployee: "ဝန်ထမ်းစုစုပေါင်း",
       active: "လုပ်ငန်းခွင်ဝင်",
@@ -152,7 +497,7 @@ const allAppTranslations: AllTranslationsCollection = {
       statusColumn: "အခြေအနေ",
       actionColumn: "လုပ်ဆောင်ချက်",
       editButton: "ပြင်ဆင်ရန်",
-      // --- NEW MODAL TRANSLATIONS ---
+      // --- MODAL TRANSLATIONS ---
       addNewEmployeeTitle: "ဝန်ထမ်းအသစ်ထည့်ရန်",
       fullNamePlaceholder: "အမည်အပြည့်အစုံ",
       baseRatePlaceholder: "အခြေခံနှုန်း",
@@ -164,13 +509,166 @@ const allAppTranslations: AllTranslationsCollection = {
       onLeaveStatus: "ခွင့်ယူထား",
       cancelButton: "ပယ်ဖျက်ရန်",
       addButton: "ထည့်ရန်",
-      // --- NEW EDIT/DELETE MODAL TRANSLATIONS ---
+      // --- EDIT/DELETE MODAL TRANSLATIONS ---
       editEmployeeTitle: "ဝန်ထမ်းပြင်ဆင်ရန်",
       saveChangesButton: "အပြောင်းအလဲများ သိမ်းဆည်းရန်",
       confirmDeleteTitle: "ဖျက်ရန် အတည်ပြုပါ",
       confirmDeleteMessage1: "ဖျက်ရန်သေချာပါသလား",
       confirmDeleteMessage2: " ဤလုပ်ဆောင်ချက်ကို ပြန်ဖျက်၍မရပါ။",
       deleteButton: "ဖျက်ရန်",
+    },
+    // UPDATED: Work Log Page Translations (Added 'all' key)
+    workLogPage: {
+      totalWorkLogs: "စုစုပေါင်းအလုပ်မှတ်တမ်းများ",
+      totalCompletedWorklogs: "ပြီးစီးလုပ်ငန်းမှတ်တမ်းအရေအတွက်",
+      totalQuantityProduced: "စုစုပေါင်းထုတ်လုပ်မှုပမာဏ",
+      workLogsTitle: "အလုပ်မှတ်တမ်းများ",
+      sortBy: "စီစစ်ရန်:",
+      date: "နေ့စွဲ",
+      addNewWorkLog: "အလုပ်မှတ်တမ်းအသစ်ထည့်ရန်",
+      fullNameColumn: "အမည်အပြည့်အစုံ",
+      employeeIdColumn: "ဝန်ထမ်း ID",
+      dateColumn: "နေ့စွဲ",
+      productRateColumn: "ထုတ်ကုန်နှုန်း",
+      quantityColumn: "ပမာဏ",
+      roleColumn: "ရာထူး",
+      statusColumn: "အခြေအနေ",
+      noteColumn: "မှတ်စု",
+      actionColumn: "လုပ်ဆောင်ချက်",
+      showing: "ပြသနေသည်",
+      of: "၏",
+      workLogs: "အလုပ်မှတ်တမ်းများ",
+      editButton: "ပြင်ဆင်ရန်",
+      deleteButton: "ဖျက်ရန်",
+      // Modal specific translations for WorkLog
+      addNewWorkLogTitle: "အလုပ်မှတ်တမ်းအသစ်ထည့်ရန်",
+      editWorkLogTitle: "အလုပ်မှတ်တမ်းပြင်ဆင်ရန်",
+      fullNameLabel: "အမည်အပြည့်အစုံ",
+      productRateLabel: "ထုတ်ကုန်နှုန်း",
+      quantityLabel: "ပမာဏ",
+      roleLabel: "ရာထူး",
+      dateLabel: "နေ့စွဲ",
+      noteLabel: "မှတ်စု (ရွေးချယ်နိုင်သည်)",
+      notePlaceholder: "အခြားမှတ်စုများ...",
+      cancelButton: "ပယ်ဖျက်ရန်",
+      addWorkLogButton: "အလုပ်မှတ်တမ်းထည့်ရန်",
+      saveChangesButton: "အပြောင်းအလဲများ သိမ်းဆည်းရန်",
+      confirmDeleteTitle: "ဖျက်ရန် အတည်ပြုပါ",
+      confirmDeleteMessage1: "အလုပ်မှတ်တမ်းအတွက် ဖျက်ရန်သေချာပါသလား",
+      confirmDeleteMessage2: " ဤလုပ်ဆောင်ချက်ကို ပြန်ဖျက်၍မရပါ။",
+      deleteButtonConfirm: "ဖျက်ရန်",
+      selectEmployee: "ဝန်ထမ်းရွေးပါ",
+      optional: "ရွေးချယ်နိုင်သည်",
+      datePlaceholder: "YYYY-MM-DD (ဥပမာ: 2025-06-22)",
+      // Status options translations
+      statusOnGoing: "ဆောင်ရွက်ဆဲ",
+      statusCompleted: "ပြီးစီး",
+      statusRejected: "ငြင်းပယ်",
+      all: "အားလုံး", // Added 'All' for status filter dropdown
+    },
+    // UPDATED: Payroll Page Translations (Added new keys for period selection and paid status)
+    payrollPage: {
+      totalNetPayroll: "စုစုပေါင်းလစာ",
+      totalBonus: "စုစုပေါင်းအပိုဆု",
+      totalDeduction: "စုစုပေါင်းဖြတ်တောက်မှု",
+      allPayrollTitle: "လစာအားလုံး",
+      payrollPeriodDisplay: "လစာကာလ:",
+      exportButton: "ထုတ်ရန်",
+      sortBy: "စီစစ်ရန်:",
+      date: "နေ့စွဲ",
+      fullNameColumn: "အမည်အပြည့်အစုံ",
+      productRateColumn: "ထုတ်ကုန်နှုန်း",
+      totalQuantityColumn: "စုစုပေါင်းပမာဏ",
+      totalSalaryColumn: "စုစုပေါင်းလစာ",
+      bonusDeductionColumn: "အပိုဆု/ဖြတ်တောက်မှု",
+      netSalaryColumn: "အသားတင်လစာ",
+      showing: "ပြသနေသည်",
+      of: "၏",
+      payrollEntries: "လစာစာရင်းများ",
+      none: "မရှိပါ",
+      // Bonus/Deduction Modal Translations
+      addBonusDeductionTitle: "အပိုဆု/ဖြတ်တောက်မှု ထည့်ရန်",
+      type: "အမျိုးအစား",
+      bonus: "အပိုဆု",
+      deduction: "ဖြတ်တောက်မှု",
+      amount: "ပမာဏ",
+      notePlaceholder: "အပိုဆု/ဖြတ်တောက်မှုအတွက် မှတ်ချက် (ရွေးချယ်နိုင်သည်)",
+      optional: "ရွေးချယ်နိုင်သည်",
+      cancelButton: "ပယ်ဖျက်ရန်",
+      saveButton: "သိမ်းဆည်းရန်",
+      invalidAmount: "မှန်ကန်သော ပမာဏကို ထည့်သွင်းပါ။",
+      // Period selection translations
+      periodTypeLabel: "ကာလရွေးချယ်ပါ:",
+      periodTypeDay: "နေ့စဉ်",
+      periodTypeWeek: "အပတ်စဉ်",
+      periodTypeMonth: "လစဉ်",
+      periodTypeCustom: "စိတ်ကြိုက်ရက်စွဲ",
+      startDateLabel: "စတင်ရက်စွဲ:",
+      endDateLabel: "ပြီးဆုံးရက်စွဲ:",
+      applyFilterButton: "စစ်ထုတ်ရန်",
+      currentPeriod: "လက်ရှိကာလ:",
+      // NEW: Paid Status translations
+      paidStatusColumn: "ပေးချေမှုအခြေအနေ",
+      statusPaid: "ပေးပြီး",
+      statusUnpaid: "မပေးရသေး",
+    },
+    // UPDATED: Expense & Income Page Translations (Updated column/placeholder keys)
+    expenseIncomePage: {
+      totalNetIncomeExpense: "စုစုပေါင်းဝင်ငွေနှင့်အသုံးစရိတ်",
+      totalIncome: "စုစုပေါင်းဝင်ငွေ",
+      totalExpense: "စုစုပေါင်းအသုံးစရိတ်",
+      incomeTab: "ဝင်ငွေ",
+      expenseTab: "အသုံးစရိတ်",
+      sortBy: "စီစစ်ရန်:",
+      amount: "ပမာဏ", // for "Sort by: Amount"
+      addNewIncome: "ဝင်ငွေအသစ်ထည့်ရန်",
+      addNewExpense: "အသုံးစရိတ်အသစ်ထည့်ရန်",
+      incomeNameColumn: "ဝင်ငွေအမည်",
+      expenseNameColumn: "အသုံးစရိတ်အမည်",
+      amountColumn: "ပမာဏ",
+      clientColumn: "ဖောက်သည်",
+      paidToColumn: "ပေးချေသူ", // Changed from Category to Paid to
+      dateColumn: "နေ့စွဲ",
+      noteColumn: "မှတ်စု",
+      actionColumn: "လုပ်ဆောင်ချက်",
+      editButton: "ပြင်ဆင်ရန်",
+      deleteButton: "ဖျက်ရန်",
+      showing: "ပြသနေသည်",
+      of: "၏",
+      incomeEntries: "ဝင်ငွေစာရင်းများ",
+      expenseEntries: "အသုံးစရိတ်စာရင်းများ",
+      na: "မသက်ဆိုင်ပါ",
+      noEntriesFound: "မည်သည့်စာရင်းမျှမတွေ့ပါ။",
+      // Modals
+      addNewIncomeTitle: "ဝင်ငွေအသစ်ထည့်ရန်",
+      addNewExpenseTitle: "အသုံးစရိတ်အသစ်ထည့်ရန်",
+      editIncomeTitle: "ဝင်ငွေပြင်ဆင်ရန်",
+      editExpenseTitle: "အသုံးစရိတ်ပြင်ဆင်ရန်",
+      incomeNamePlaceholder: "ဝင်ငွေအမည်",
+      expenseNamePlaceholder: "အသုံးစရိတ်အမည်",
+      clientPlaceholder: "ဖောက်သည်",
+      paidToPlaceholder: "ပေးချေသူ", // Changed from Category to Paid to
+      notePlaceholder: "အခြားမှတ်စုများ...",
+      cancelButton: "ပယ်ဖျက်ရန်",
+      addButton: "ထည့်ရန်",
+      saveChangesButton: "အပြောင်းအလဲများ သိမ်းဆည်းရန်",
+      optional: "ရွေးချယ်နိုင်သည်",
+      invalidAmount: "မှန်ကန်သော ပမာဏကို ထည့်သွင်းပါ။",
+      confirmDeleteTitle: "ဖျက်ရန် အတည်ပြုပါ",
+      confirmDeleteMessage1: "ဖျက်ရန်သေချာပါသလား",
+      confirmDeleteMessage2: " ဤလုပ်ဆောင်ချက်ကို ပြန်ဖျက်၍မရပါ။",
+      deleteButtonConfirm: "ဖျက်ရန်",
+      // NEW: Period selection translations
+      periodTypeLabel: "ကာလရွေးချယ်ပါ:",
+      periodTypeDay: "နေ့စဉ်",
+      periodTypeWeek: "အပတ်စဉ်",
+      periodTypeMonth: "လစဉ်",
+      periodTypeCustom: "စိတ်ကြိုက်ရက်စွဲ",
+      startDateLabel: "စတင်ရက်စွဲ:",
+      endDateLabel: "ပြီးဆုံးရက်စွဲ:",
+      applyFilterButton: "စစ်ထုတ်ရန်",
+      currentPeriod: "လက်ရှိကာလ:",
+      selectPeriod: "ကာလရွေးချယ်ပါ...", // For initial display of currentPeriod
     },
   },
 };
