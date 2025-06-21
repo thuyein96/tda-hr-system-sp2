@@ -34,7 +34,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ setIsLoggedIn }) => {
 
     try {
       // Make the API call to your backend authentication endpoint
-      const response = await fetch('https://tda-backend-khaki.vercel.app/api/auth/signIn', {
+      const response = await fetch('https://tda-backend-khaki.vercel.app/_api/auth/signIn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -48,6 +48,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ setIsLoggedIn }) => {
       }
 
       console.log('Login successful:', data);
+      console.log("TOKEN", data.token);
       setRedirecting(true); // Show the full-screen "Logging you in..." message
       setIsLoggedIn(true); // 🎉 Crucial: Update the global authentication state in App.tsx!
 

@@ -3,198 +3,8 @@ import { Users, Plus, ChevronLeft, ChevronRight, ChevronDown, Check, X, Edit, Tr
 import { useLanguage } from '../../contexts/LanguageContext';
 import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 import { employeeService } from '@/services/employeeService';
-
-
-// -------------------------------------------------------------------------
-// AddEmployeeModal Component (UI-focused, logs data on submit)
-// -------------------------------------------------------------------------
-interface AddEmployeeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  employeeToEdit?: EmployeeResponse; // Optional: if provided, it's an "edit" operation
-  onSave: (employee: EmployeeResponse, isEditing: boolean) => void;
-}
-
-const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmployeeModalProps) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const { translations } = useLanguage();
-  const modalTranslations = translations.employeePage;
-
-  const isEditing = !!employeeToEdit;
-
-  // State for form inputs, initialized from employeeToEdit if editing
-  const [fullName, setFullName] = useState(employeeToEdit?.name || '');
-  const [phoneNumber, setPhoneNumber] = useState(employeeToEdit?.phoneNumber || '');
-  const [role, setRole] = useState(employeeToEdit?.position || '');
-  const [joinDate, setJoinDate] = useState(employeeToEdit?.joinedDate || '');
-  const [address, setAddress] = useState(employeeToEdit?.address || '')
-  // const [status, setStatus] = useState<'Active' | 'On leave'>(employeeToEdit?.position || 'Active');
-  // const [status, setStatus] = useState(employeeToEdit.position || '')
-
-  // Reset form fields when modal opens or employeeToEdit changes
-  useEffect(() => {
-    if (isOpen) {
-      setFullName(employeeToEdit?.name || '');
-      setPhoneNumber(employeeToEdit?.phoneNumber || '');
-      setRole(employeeToEdit?.position || '');
-      setJoinDate(employeeToEdit?.joinedDate || '');
-      setAddress(employeeToEdit.address || '')
-      // setStatus(employeeToEdit?.position || '');
-    }
-  }, [isOpen, employeeToEdit]);
-
-  // Close modal on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const employeeId = isEditing ? employeeToEdit!._id : `E-${Date.now().toString().slice(-4)}`;
-    const id = isEditing ? employeeToEdit!._id : `temp-${Date.now()}`;
-
-    // const submittedEmployeeData: EmployeeData = {
-    //   id,
-    //   employeeId,
-    //   name: fullName,
-    //   phone: phoneNumber,
-    //   role,
-    //   joinDate,
-    //   // status,
-    //   address: '',
-    //   __v: 0
-    // };
-
-    const submittedEmployeeData: EmployeeResponse = {
-      _id: id,
-      name: fullName,
-      phoneNumber: phoneNumber,
-      address: address,
-      position: role,
-      joinedDate: joinDate,
-    };
-
-    console.log(`[UI-ONLY] ${isEditing ? 'Editing' : 'Adding'} Employee. Data captured for backend:`, submittedEmployeeData);
-    onSave(submittedEmployeeData, isEditing);
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div ref={modalRef} className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-          aria-label="Close modal"
-        >
-          <X size={24} />
-        </button>
-
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          {isEditing ? modalTranslations.editEmployeeTitle : modalTranslations.addNewEmployeeTitle}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              type="text"
-              placeholder={modalTranslations.fullNamePlaceholder}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-              required
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder={modalTranslations.phoneNumberPlaceholder}
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-              required
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder={modalTranslations.rolePlaceholder}
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-              required
-            />
-          </div>
-          <div>
-            <input
-              type="date"
-              value={joinDate}
-              onChange={(e) => setJoinDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-              required
-            />
-          </div>
-          <div>
-            <p className="text-gray-700 mb-2">{modalTranslations.selectTypeLabel}</p>
-            <div className="flex gap-6">
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  name="status"
-                  value="Active"
-                  checked={status === 'Active'}
-                  onChange={() => setRole('')}
-                  className="form-radio text-red-500 h-5 w-5"
-                />
-                <span className="ml-2 text-gray-700">{modalTranslations.activeStatus}</span>
-              </label>
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  name="status"
-                  value="On leave"
-                  checked={status === 'On leave'}
-                  onChange={() => setRole('')}
-                  className="form-radio text-red-500 h-5 w-5"
-                />
-                <span className="ml-2 text-gray-700">{modalTranslations.onLeaveStatus}</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
-            >
-              {modalTranslations.cancelButton}
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-[#FF6767] text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
-            >
-              {isEditing ? modalTranslations.saveChangesButton : modalTranslations.addButton}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
+import { AddEmployeeModal } from '@/components/AddEmployeeModal/AddEmployeeModal';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal/ConfirmDeleteModal';
 
 
 // -------------------------------------------------------------------------
@@ -208,70 +18,70 @@ interface ConfirmDeleteModalProps {
   employeeName: string;
 }
 
-const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, employeeId, employeeName }: ConfirmDeleteModalProps) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const { translations } = useLanguage();
-  const modalTranslations = translations.employeePage;
+// const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, employeeId, employeeName }: ConfirmDeleteModalProps) => {
+//   const modalRef = useRef<HTMLDivElement>(null);
+//   const { translations } = useLanguage();
+//   const modalTranslations = translations.employeePage;
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, onClose]);
+//   useEffect(() => {
+//     function handleClickOutside(event: MouseEvent) {
+//       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+//         onClose();
+//       }
+//     }
+//     if (isOpen) {
+//       document.addEventListener('mousedown', handleClickOutside);
+//     }
+//     return () => {
+//       document.removeEventListener('mousedown', handleClickOutside);
+//     };
+//   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+//   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div ref={modalRef} className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative text-center">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-          aria-label="Close"
-        >
-          <X size={24} />
-        </button>
+//   return (
+//     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+//       <div ref={modalRef} className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative text-center">
+//         <button
+//           onClick={onClose}
+//           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+//           aria-label="Close"
+//         >
+//           <X size={24} />
+//         </button>
 
-        <Trash2 className="mx-auto text-red-500 w-16 h-16 mb-4" />
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
-          {modalTranslations.confirmDeleteTitle}
-        </h2>
-        <p className="text-gray-600 mb-6">
-          {modalTranslations.confirmDeleteMessage1} <span className="font-semibold text-red-600">{employeeName}</span> {modalTranslations.confirmDeleteMessage2}
-        </p>
+//         <Trash2 className="mx-auto text-red-500 w-16 h-16 mb-4" />
+//         <h2 className="text-xl font-bold text-gray-800 mb-2">
+//           {modalTranslations.confirmDeleteTitle}
+//         </h2>
+//         <p className="text-gray-600 mb-6">
+//           {modalTranslations.confirmDeleteMessage1} <span className="font-semibold text-red-600">{employeeName}</span> {modalTranslations.confirmDeleteMessage2}
+//         </p>
 
-        <div className="flex justify-center gap-3">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
-          >
-            {modalTranslations.cancelButton}
-          </button>
-          <button
-            onClick={() => {
-              if (employeeId) {
-                console.log(`[UI-ONLY] Confirming deletion of employee ID: ${employeeId} (Name: ${employeeName})`);
-                onConfirm(employeeId);
-              }
-              onClose();
-            }}
-            className="px-6 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
-          >
-            {modalTranslations.deleteButton}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+//         <div className="flex justify-center gap-3">
+//           <button
+//             onClick={onClose}
+//             className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+//           >
+//             {modalTranslations.cancelButton}
+//           </button>
+//           <button
+//             onClick={() => {
+//               if (employeeId) {
+//                 console.log(`[UI-ONLY] Confirming deletion of employee ID: ${employeeId} (Name: ${employeeName})`);
+//                 onConfirm(employeeId);
+//               }
+//               onClose();
+//             }}
+//             className="px-6 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
+//           >
+//             {modalTranslations.deleteButton}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
 
 // -------------------------------------------------------------------------
 // StatusChanger Component (New for inline status change UI)

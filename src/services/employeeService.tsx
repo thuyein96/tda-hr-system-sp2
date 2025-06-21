@@ -1,7 +1,7 @@
 import { EmployeeResponse } from "@/dtos/employee/EmployeeResponse";
 import { EmployeeDto } from "@/dtos/employee/EmployeeDto";
 
-const API_BASE_URL = 'https://tda-backend-khaki.vercel.app/api';
+const API_BASE_URL = 'https://tda-backend-khaki.vercel.app/_api';
 
 export const employeeService = {
     // Get all employees
@@ -37,7 +37,7 @@ export const employeeService = {
           headers: {
             'Content-Type': 'application/json',
             // Add authorization header if needed
-            // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
           body: JSON.stringify(employee),
         });
