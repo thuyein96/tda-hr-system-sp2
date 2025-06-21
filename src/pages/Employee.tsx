@@ -3,16 +3,165 @@ import { Users, Plus, ChevronLeft, ChevronRight, ChevronDown, Check, X, Edit, Tr
 import { useLanguage } from '../contexts/LanguageContext';
 
 // -------------------------------------------------------------------------
+// API Configuration
+// -------------------------------------------------------------------------
+const API_BASE_URL = 'https://tda-backend-khaki.vercel.app/api';
+// -------------------------------------------------------------------------
+// API Service Functions
+// -------------------------------------------------------------------------
+const employeeService = {
+  // Get all employees
+  getAllEmployees: async (): Promise<EmployeeResponse[]> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employee`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if needed
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch employees: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      throw error;
+    }
+  },
+
+  // Create new employee
+  createEmployee: async (employee: Omit<EmployeeDto, 'id'>): Promise<EmployeeResponse> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if needed
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(employee),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create employee: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error creating employee:', error);
+      throw error;
+    }
+  },
+
+  // Update employee
+  updateEmployee: async (id: string, employee: Partial<EmployeeData>): Promise<EmployeeData> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if needed
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(employee),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update employee: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error updating employee:', error);
+      throw error;
+    }
+  },
+
+  // Delete employee
+  deleteEmployee: async (id: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if needed
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete employee: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      throw error;
+    }
+  },
+
+  // Update employee status
+  updateEmployeeStatus: async (id: string, status: 'Active' | 'On leave'): Promise<EmployeeData> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if needed
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update employee status: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error updating employee status:', error);
+      throw error;
+    }
+  },
+};
+
+// -------------------------------------------------------------------------
 // EmployeeData Interface
 // -------------------------------------------------------------------------
 interface EmployeeData {
   id: string; // Unique ID for table keys and identifying which employee is being "edited" or "deleted"
   name: string;
-  employeeId: string;
+  employeeId?: string;
+  address: string;
   phone: string;
   role: string;
   joinDate: string; // MM-DD format
-  status: 'Active' | 'On leave';
+  status?: 'Active' | 'On leave';
+  __v: number;
+}
+
+interface EmployeeResponse {
+  _id: string;
+  name: string;
+  phoneNumber: string;
+  address: string;
+  position: string;
+  joinedDate: string;
+}
+
+interface EmployeeDto {
+  name: string;
+  phoneNumber: string;
+  address: string;
+  position: string;
+  joinedDate: string;
 }
 
 // -------------------------------------------------------------------------
@@ -21,8 +170,8 @@ interface EmployeeData {
 interface AddEmployeeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  employeeToEdit?: EmployeeData; // Optional: if provided, it's an "edit" operation
-  onSave: (employee: EmployeeData, isEditing: boolean) => void;
+  employeeToEdit?: EmployeeResponse; // Optional: if provided, it's an "edit" operation
+  onSave: (employee: EmployeeResponse, isEditing: boolean) => void;
 }
 
 const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmployeeModalProps) => {
@@ -34,19 +183,22 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
 
   // State for form inputs, initialized from employeeToEdit if editing
   const [fullName, setFullName] = useState(employeeToEdit?.name || '');
-  const [phoneNumber, setPhoneNumber] = useState(employeeToEdit?.phone || '');
-  const [role, setRole] = useState(employeeToEdit?.role || '');
-  const [joinDate, setJoinDate] = useState(employeeToEdit?.joinDate || '');
-  const [status, setStatus] = useState<'Active' | 'On leave'>(employeeToEdit?.status || 'Active');
+  const [phoneNumber, setPhoneNumber] = useState(employeeToEdit?.phoneNumber || '');
+  const [role, setRole] = useState(employeeToEdit?.position || '');
+  const [joinDate, setJoinDate] = useState(employeeToEdit?.joinedDate || '');
+  const [address, setAddress] = useState(employeeToEdit?.address || '')
+  // const [status, setStatus] = useState<'Active' | 'On leave'>(employeeToEdit?.position || 'Active');
+  // const [status, setStatus] = useState(employeeToEdit.position || '')
 
   // Reset form fields when modal opens or employeeToEdit changes
   useEffect(() => {
     if (isOpen) {
       setFullName(employeeToEdit?.name || '');
-      setPhoneNumber(employeeToEdit?.phone || '');
-      setRole(employeeToEdit?.role || '');
-      setJoinDate(employeeToEdit?.joinDate || '');
-      setStatus(employeeToEdit?.status || 'Active');
+      setPhoneNumber(employeeToEdit?.phoneNumber || '');
+      setRole(employeeToEdit?.position || '');
+      setJoinDate(employeeToEdit?.joinedDate || '');
+      setAddress(employeeToEdit.address || '')
+      // setStatus(employeeToEdit?.position || '');
     }
   }, [isOpen, employeeToEdit]);
 
@@ -70,17 +222,28 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const employeeId = isEditing ? employeeToEdit!.employeeId : `E-${Date.now().toString().slice(-4)}`;
-    const id = isEditing ? employeeToEdit!.id : `temp-${Date.now()}`;
+    const employeeId = isEditing ? employeeToEdit!._id : `E-${Date.now().toString().slice(-4)}`;
+    const id = isEditing ? employeeToEdit!._id : `temp-${Date.now()}`;
 
-    const submittedEmployeeData: EmployeeData = {
-      id,
-      employeeId,
+    // const submittedEmployeeData: EmployeeData = {
+    //   id,
+    //   employeeId,
+    //   name: fullName,
+    //   phone: phoneNumber,
+    //   role,
+    //   joinDate,
+    //   // status,
+    //   address: '',
+    //   __v: 0
+    // };
+
+    const submittedEmployeeData: EmployeeResponse = {
+      _id: id,
       name: fullName,
-      phone: phoneNumber,
-      role,
-      joinDate,
-      status,
+      phoneNumber: phoneNumber,
+      address: address,
+      position: role,
+      joinedDate: joinDate,
     };
 
     console.log(`[UI-ONLY] ${isEditing ? 'Editing' : 'Adding'} Employee. Data captured for backend:`, submittedEmployeeData);
@@ -152,7 +315,7 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
                   name="status"
                   value="Active"
                   checked={status === 'Active'}
-                  onChange={() => setStatus('Active')}
+                  onChange={() => setRole('')}
                   className="form-radio text-red-500 h-5 w-5"
                 />
                 <span className="ml-2 text-gray-700">{modalTranslations.activeStatus}</span>
@@ -163,7 +326,7 @@ const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: AddEmploy
                   name="status"
                   value="On leave"
                   checked={status === 'On leave'}
-                  onChange={() => setStatus('On leave')}
+                  onChange={() => setRole('')}
                   className="form-radio text-red-500 h-5 w-5"
                 />
                 <span className="ml-2 text-gray-700">{modalTranslations.onLeaveStatus}</span>
@@ -370,39 +533,44 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [employeeToDeleteDetails, setEmployeeToDeleteDetails] = useState<{ id: string, name: string } | null>(null);
-  const [selectedEmployeeForEdit, setSelectedEmployeeForEdit] = useState<EmployeeData | undefined>(undefined);
+  const [selectedEmployeeForEdit, setSelectedEmployeeForEdit] = useState<EmployeeResponse | undefined>(undefined);
+
+  const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const { language, translations } = useLanguage();
   const employeePageTranslations = translations.employeePage;
 
-  const allEmployees: EmployeeData[] = [
-    { id: '1', name: 'Kyaw', employeeId: 'E-01', phone: '09-5120045', role: 'Plastic producer', joinDate: '2020-04-29', status: 'Active' },
-    { id: '2', name: 'Soe', employeeId: 'E-02', phone: '09-1234564', role: 'Plastic checker', joinDate: '2020-05-20', status: 'On leave' },
-    { id: '3', name: 'Thant', employeeId: 'E-11', phone: '09-1234565', role: 'Plastic checker', joinDate: '2020-05-21', status: 'Active' },
-    { id: '4', name: 'Thin', employeeId: 'E-12', phone: '09-1246634', role: 'Plastic checker', joinDate: '2020-05-25', status: 'Active' },
-    { id: '5', name: 'Htet', employeeId: 'E-14', phone: '09-57341162', role: 'Plastic checker', joinDate: '2020-05-27', status: 'Active' },
-    { id: '6', name: 'Aung', employeeId: 'E-04', phone: '09-34571234', role: 'Plastic Producer', joinDate: '2020-07-21', status: 'Active' },
-    { id: '7', name: 'Yein', employeeId: 'E-05', phone: '09-41431556', role: 'N/A', joinDate: '2020-08-21', status: 'Active' },
-    { id: '8', name: 'Myo', employeeId: 'E-06', phone: '09-12345678', role: 'Quality Control', joinDate: '2020-09-15', status: 'Active' },
-    { id: '9', name: 'Zaw', employeeId: 'E-07', phone: '09-87654321', role: 'Machine Operator', joinDate: '2020-10-01', status: 'On leave' },
-    { id: '10', name: 'Htoo', employeeId: 'E-08', phone: '09-11223344', role: 'Supervisor', joinDate: '2020-10-15', status: 'Active' },
-    { id: '11', name: 'Naing', employeeId: 'E-09', phone: '09-55443322', role: 'Technician', joinDate: '2020-11-01', status: 'Active' },
-    { id: '12', name: 'Thura', employeeId: 'E-10', phone: '09-99887766', role: 'Assistant', joinDate: '2020-11-15', status: 'On leave' },
-    { id: '13', name: 'Kaung', employeeId: 'E-13', phone: '09-66554433', role: 'Operator', joinDate: '2020-12-01', status: 'Active' },
-    { id: '14', name: 'Phyo', employeeId: 'E-15', phone: '09-33221144', role: 'Helper', joinDate: '2020-12-15', status: 'On leave' },
-  ];
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await employeeService.getAllEmployees();
+      setEmployees(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching employees');
+      console.error('Failed to fetch employees:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const filteredEmployees = allEmployees.filter(emp =>
+  const filteredEmployees = employees.filter(emp =>
     emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.phone.includes(searchQuery)
+    emp._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    emp.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    emp.phoneNumber.includes(searchQuery)
   );
 
+  // need to change later : Bro Thu Yein
   const totalEmployees = filteredEmployees.length;
-  const activeEmployees = filteredEmployees.filter(emp => emp.status === 'Active').length;
-  const onLeaveEmployees = filteredEmployees.filter(emp => emp.status === 'On leave').length;
+  const activeEmployees = filteredEmployees.filter(emp => emp.position === 'Active').length;
+  const onLeaveEmployees = filteredEmployees.filter(emp => emp.position === 'On leave').length;
 
   const totalPages = Math.ceil(totalEmployees / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -423,17 +591,18 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     setIsAddModalOpen(true);
   };
 
-  const handleOpenEditModal = (employee: EmployeeData) => {
+  const handleOpenEditModal = (employee: EmployeeResponse) => {
     setSelectedEmployeeForEdit(employee);
     setIsAddModalOpen(true);
   };
 
-  const handleSaveEmployee = (employee: EmployeeData, isEditing: boolean) => {
+  // Todo: Need to change model 
+  const handleSaveEmployee = (employee: EmployeeResponse, isEditing: boolean) => {
     console.log(`[UI-ONLY] ${isEditing ? 'Saved' : 'Added'} Employee data (would send to backend):`, employee);
   };
 
-  const handleConfirmDeleteClick = (employee: EmployeeData) => {
-    setEmployeeToDeleteDetails({ id: employee.id, name: employee.name });
+  const handleConfirmDeleteClick = (employee: EmployeeResponse) => {
+    setEmployeeToDeleteDetails({ id: employee._id, name: employee.name });
     setIsDeleteConfirmModalOpen(true);
   };
 
@@ -492,7 +661,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
             {/* All Employees Title */}
             <div>
-              <h2 className="text-xl font-bold">{employeePageTranslations.allEmployees}</h2>
+              <h2 className="text-xl font-bold">{employeePageTranslations.employees}</h2>
             </div>
             {/* Sort by and Add New Employee - wrapped for mobile stacking */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"> {/* Changed to flex-col on mobile, flex-row on small+ */}
@@ -526,17 +695,18 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
               </thead>
               <tbody>
                 {currentEmployees.map(emp => (
-                  <tr key={emp.id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
+                  <tr key={emp._id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium text-gray-900">{emp.name}</td>
-                    <td className="py-3 px-4 text-gray-700">{emp.employeeId}</td>
-                    <td className="py-3 px-4 text-gray-700">{emp.phone}</td>
-                    <td className="py-3 px-4 text-gray-700">{emp.role}</td>
-                    <td className="py-3 px-4 text-gray-700">{emp.joinDate}</td>
+                    <td className="py-3 px-4 text-gray-700">{emp._id}</td>
+                    <td className="py-3 px-4 text-gray-700">{emp.phoneNumber}</td>
+                    <td className="py-3 px-4 text-gray-700">{emp.position}</td>
+                    <td className="py-3 px-4 text-gray-700">{emp.joinedDate.split("T",1)}</td>
                     <td className="py-3 px-4 text-center">
                       <StatusChanger
-                        employeeId={emp.id}
+                        employeeId={emp._id}
                         employeeName={emp.name}
-                        currentStatus={emp.status}
+                        // Todo: need to update status later
+                        currentStatus={'Active'}
                         translations={employeePageTranslations}
                       />
                     </td>
