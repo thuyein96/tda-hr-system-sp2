@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { EyeOff, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SignInResponse } from '@/dtos/signIn/SignInResponse';
 
 interface LoginFormProps {
   // This prop allows LoginForm to update the global authentication state
@@ -17,7 +18,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ setIsLoggedIn }) => {
   const [redirecting, setRedirecting] = useState(false); // Controls the full-screen "Logging you in..." message
   const [error, setError] = useState<string | null>(null); // For displaying API errors
   const navigate = useNavigate();
-
+  const [signInResponse, setSignInResponse] = useState<SignInResponse>();
   // Password strength criteria for validation feedback
   const passwordCriteria = [
     { text: 'Use 8 or more characters', met: password.length >= 8 },
@@ -48,12 +49,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ setIsLoggedIn }) => {
       }
 
       console.log('Login successful:', data);
-      console.log("TOKEN", data.token);
       setRedirecting(true); // Show the full-screen "Logging you in..." message
       setIsLoggedIn(true); // 🎉 Crucial: Update the global authentication state in App.tsx!
 
-      localStorage.setItem('token', data.token); // Store the token in localStorage for future requests
-      localStorage.setItem('user', JSON.stringify(data.user)); // Store user data in localStorage
+      setSignInResponse(data);
+      console.log("TOKEN: ", signInResponse.accessToken);
+      localStorage.setItem('token', signInResponse.accessToken); // Store the token in localStorage for future requests
+      localStorage.setItem('user', JSON.stringify(signInResponse.username)); // Store user data in localStorage
       // Optionally, you can also set the token in a global state or context if neede
       setTimeout(() => {
         navigate('/dashboard'); // Navigate to the dashboard after successful login
