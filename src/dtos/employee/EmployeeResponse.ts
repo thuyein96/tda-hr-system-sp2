@@ -4,5 +4,6 @@ export interface EmployeeResponse {
     phoneNumber: string;
     address: string;
     position: string;
+    status: string;
     joinedDate: string;
 }

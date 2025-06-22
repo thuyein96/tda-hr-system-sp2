@@ -33,7 +33,6 @@ export const AddEmployeeModal = ({ isOpen, onClose, employeeToEdit, onSave }: Ad
           {isEditing ? modalTranslations.editEmployeeTitle : modalTranslations.addNewEmployeeTitle}
         </h2>
         <EmployeeForm
-          isEditing={isEditing}
           employeeToEdit={employeeToEdit}
           onSave={onSave}
           onClose={onClose}

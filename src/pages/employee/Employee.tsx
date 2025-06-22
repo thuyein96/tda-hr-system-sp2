@@ -5,6 +5,7 @@ import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 import { employeeService } from '@/services/employeeService';
 import { AddEmployeeModal } from '@/components/AddEmployeeModal/AddEmployeeModal';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal/ConfirmDeleteModal';
+import { EmployeeDto } from '@/dtos/employee/EmployeeDto';
 
 
 // -------------------------------------------------------------------------
@@ -18,70 +19,6 @@ interface ConfirmDeleteModalProps {
   employeeName: string;
 }
 
-// const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, employeeId, employeeName }: ConfirmDeleteModalProps) => {
-//   const modalRef = useRef<HTMLDivElement>(null);
-//   const { translations } = useLanguage();
-//   const modalTranslations = translations.employeePage;
-
-//   useEffect(() => {
-//     function handleClickOutside(event: MouseEvent) {
-//       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-//         onClose();
-//       }
-//     }
-//     if (isOpen) {
-//       document.addEventListener('mousedown', handleClickOutside);
-//     }
-//     return () => {
-//       document.removeEventListener('mousedown', handleClickOutside);
-//     };
-//   }, [isOpen, onClose]);
-
-//   if (!isOpen) return null;
-
-//   return (
-//     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-//       <div ref={modalRef} className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative text-center">
-//         <button
-//           onClick={onClose}
-//           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-//           aria-label="Close"
-//         >
-//           <X size={24} />
-//         </button>
-
-//         <Trash2 className="mx-auto text-red-500 w-16 h-16 mb-4" />
-//         <h2 className="text-xl font-bold text-gray-800 mb-2">
-//           {modalTranslations.confirmDeleteTitle}
-//         </h2>
-//         <p className="text-gray-600 mb-6">
-//           {modalTranslations.confirmDeleteMessage1} <span className="font-semibold text-red-600">{employeeName}</span> {modalTranslations.confirmDeleteMessage2}
-//         </p>
-
-//         <div className="flex justify-center gap-3">
-//           <button
-//             onClick={onClose}
-//             className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
-//           >
-//             {modalTranslations.cancelButton}
-//           </button>
-//           <button
-//             onClick={() => {
-//               if (employeeId) {
-//                 console.log(`[UI-ONLY] Confirming deletion of employee ID: ${employeeId} (Name: ${employeeName})`);
-//                 onConfirm(employeeId);
-//               }
-//               onClose();
-//             }}
-//             className="px-6 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
-//           >
-//             {modalTranslations.deleteButton}
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
 
 // -------------------------------------------------------------------------
 // StatusChanger Component (New for inline status change UI)
@@ -97,7 +34,7 @@ interface EmployeePageTranslations {
 interface StatusChangerProps {
   employeeId: string;
   employeeName: string;
-  currentStatus: 'Active' | 'On leave';
+  currentStatus: 'active' | 'on_leave';
   translations: EmployeePageTranslations;
 }
 
@@ -105,8 +42,8 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const getBadgeStyle = (status: 'Active' | 'On leave') => {
-    return status === 'Active' ? {
+  const getBadgeStyle = (status: 'active' | 'on_leave') => {
+    return status === 'active' ? {
       bg: 'bg-[#E6FAF7]',
       text: 'text-[#00B09A]'
     } : {
@@ -128,7 +65,8 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
     };
   }, []);
 
-  const handleStatusChange = (newStatus: 'Active' | 'On leave') => {
+  const handleStatusChange = (newStatus: 'active' | 'on_leave') => {
+    employeeService.updateEmployee(employeeId, newStatus)
     console.log(`[UI-ONLY] Attempting to change status for Employee ID: ${employeeId} (${employeeName}) from "${currentStatus}" to "${newStatus}". (This change is not persistent as data is static)`);
     setIsOpen(false); // Close dropdown after selection
     // In a real app, you would send an API call here to update the status in the backend.
@@ -143,7 +81,7 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
         onClick={() => setIsOpen(!isOpen)}
         className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${currentBadgeStyle.bg} ${currentBadgeStyle.text} hover:opacity-80 transition-opacity`}
       >
-        <span>{currentStatus === 'Active' ? translations.active : translations.onLeave}</span>
+        <span>{currentStatus === 'active' ? translations.active : translations.onLeave}</span>
         <ChevronDown className="w-3 h-3 ml-1" />
       </button>
 
@@ -151,13 +89,13 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
         <div className="absolute z-10 mt-1 w-32 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <div className="py-1">
             <button
-              onClick={() => handleStatusChange('Active')}
+              onClick={() => handleStatusChange('active')}
               className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
               {translations.activeStatus}
             </button>
             <button
-              onClick={() => handleStatusChange('On leave')}
+              onClick={() => handleStatusChange('on_leave')}
               className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
               {translations.onLeaveStatus}
@@ -220,8 +158,8 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
 
   // need to change later : Bro Thu Yein
   const totalEmployees = filteredEmployees.length;
-  const activeEmployees = filteredEmployees.filter(emp => emp.position === 'Active').length;
-  const onLeaveEmployees = filteredEmployees.filter(emp => emp.position === 'On leave').length;
+  const activeEmployees = filteredEmployees.filter(emp => emp.position === 'active').length;
+  const onLeaveEmployees = filteredEmployees.filter(emp => emp.position === 'on_leave').length;
 
   const totalPages = Math.ceil(totalEmployees / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -248,7 +186,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   };
 
   // Todo: Need to change model 
-  const handleSaveEmployee = (employee: EmployeeResponse, isEditing: boolean) => {
+  const handleSaveEmployee = (employee: EmployeeDto, isEditing: boolean) => {
     console.log(`[UI-ONLY] ${isEditing ? 'Saved' : 'Added'} Employee data (would send to backend):`, employee);
   };
 
@@ -357,7 +295,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                         employeeId={emp._id}
                         employeeName={emp.name}
                         // Todo: need to update status later
-                        currentStatus={'Active'}
+                        currentStatus={'active'}
                         translations={employeePageTranslations}
                       />
                     </td>

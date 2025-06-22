@@ -1,18 +1,17 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { useEmployeeForm } from './useEmployeeForm';
-import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 import { employeeService } from '@/services/employeeService';
+import { EmployeeDto } from '@/dtos/employee/EmployeeDto';
 
 interface Props {
-  isEditing: boolean;
-  employeeToEdit?: EmployeeResponse;
-  onSave: (employee: EmployeeResponse, isEditing: boolean) => void;
+  employeeToEdit?: EmployeeDto;
+  onSave: (employee: EmployeeDto) => void;
   onClose: () => void;
   translations: any;
 }
 
-export const EmployeeForm: React.FC<Props> = ({ isEditing, employeeToEdit, onSave, onClose, translations }) => {
+export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose, translations }) => {
   const {
     fullName, setFullName,
     phoneNumber, setPhoneNumber,
@@ -24,27 +23,20 @@ export const EmployeeForm: React.FC<Props> = ({ isEditing, employeeToEdit, onSav
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const employeeId = isEditing ? employeeToEdit!._id : `E-${Date.now().toString().slice(-4)}`;
-    const id = isEditing ? employeeToEdit!._id : `temp-${Date.now()}`;
 
-    const submittedEmployeeData: EmployeeResponse = {
-      _id: id,
+    //TODO: change the static data
+    const submittedEmployeeData: EmployeeDto = {
       name: fullName,
       phoneNumber,
-      address,
+      address: address,
       position: role,
+      status: status, // Use the status from the form state
       joinedDate: joinDate,
     };
 
-    if (isEditing && employeeToEdit?._id) {
-        // Update employee
-        await employeeService.updateEmployee(employeeToEdit._id, submittedEmployeeData);
-    } else {
-        // Create new employee
-        await employeeService.createEmployee(submittedEmployeeData);
-    }
+    await employeeService.createEmployee(submittedEmployeeData);
 
-    onSave(submittedEmployeeData, isEditing);
+    onSave(submittedEmployeeData);
     onClose();
 
   };
@@ -122,9 +114,9 @@ export const EmployeeForm: React.FC<Props> = ({ isEditing, employeeToEdit, onSav
             <input
               type="radio"
               name="status"
-              value="Active"
-              checked={status === 'Active'}
-              onChange={() => setStatus('Active')}
+              value="active"
+              checked={status === 'active'}
+              onChange={() => setStatus('active')}
               className="form-radio h-5 w-5 text-red-500 border-gray-300 focus:ring-red-400"
             />
             <span className="ml-2 text-sm text-gray-700">{translations.activeStatus}</span>
@@ -133,9 +125,9 @@ export const EmployeeForm: React.FC<Props> = ({ isEditing, employeeToEdit, onSav
             <input
               type="radio"
               name="status"
-              value="On leave"
-              checked={status === 'On leave'}
-              onChange={() => setStatus('On leave')}
+              value="on_leave"
+              checked={status === 'on_leave'}
+              onChange={() => setStatus('on_leave')}
               className="form-radio h-5 w-5 text-red-500 border-gray-300 focus:ring-red-400"
             />
             <span className="ml-2 text-sm text-gray-700">{translations.onLeaveStatus}</span>
@@ -143,22 +135,78 @@ export const EmployeeForm: React.FC<Props> = ({ isEditing, employeeToEdit, onSav
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-3 pt-4">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
-        >
-          {translations.cancelButton}
-        </button>
-        <button
-          type="submit"
-          className="px-6 py-2 bg-[#FF6767] text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
-        >
-          {isEditing ? translations.saveChangesButton : translations.addButton}
-        </button>
-      </div>
+        <div>
+            <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
+            {translations.rolePlaceholder}
+            </label>
+            <input
+            id="role"
+            type="text"
+            placeholder={translations.rolePlaceholder}
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            required
+            />
+        </div>
+
+        <div>
+            <label htmlFor="joinDate" className="block text-sm font-semibold text-gray-700 mb-2">
+            {translations.joinDatePlaceholder}
+            </label>
+            <input
+            id="joinDate"
+            type="date"
+            value={joinDate}
+            onChange={(e) => setJoinDate(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            required
+            />
+        </div>
+
+        <div>
+            <p className="text-gray-700 font-semibold mb-2">{translations.selectTypeLabel}</p>
+            <div className="flex gap-6">
+            <label className="inline-flex items-center">
+                <input
+                type="radio"
+                name="status"
+                value="active"
+                checked={status === 'active'}
+                onChange={() => setStatus('active')}
+                className="form-radio text-blue-500 h-5 w-5"
+                />
+                <span className="ml-2 text-sm text-gray-700">{translations.activeStatus}</span>
+            </label>
+            <label className="inline-flex items-center">
+                <input
+                type="radio"
+                name="status"
+                value="on_leave"
+                checked={status === 'on_leave'}
+ onChange={() => setStatus('on_leave')} // Set the status to "on_leave" here
+                className="form-radio text-blue-500 h-5 w-5"
+                />
+                <span className="ml-2 text-sm text-gray-700">{translations.onLeaveStatus}</span>
+            </label>
+            </div>
+        </div>
+
+        <div className="flex justify-end gap-4 pt-4">
+            <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+            >
+            {translations.cancelButton}
+            </button>
+            <button
+            type="submit"
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+            >
+            {translations.addButton}
+            </button>
+        </div>
     </form>
   );
 };

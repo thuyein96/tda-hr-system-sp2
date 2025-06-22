@@ -2,6 +2,8 @@ import { Trash2, X } from 'lucide-react';
 import { useConfirmDeleteModal } from './useConfirmDeleteModal';
 import { ConfirmDeleteModalProps } from './types';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
+import { employeeService } from '@/services/employeeService';
 
 const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ isOpen, onClose, onConfirm, employeeId, employeeName }) => {
   const modalRef = useConfirmDeleteModal(isOpen, onClose);
@@ -37,9 +39,9 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ isOpen, onClose
             {modalTranslations.cancelButton}
           </button>
           <button
-            onClick={() => {
+            onClick={async () => {
               if (employeeId) {
-                console.log(`[UI-ONLY] Confirming deletion of employee ID: ${employeeId} (Name: ${employeeName})`);
+                await employeeService.deleteEmployee(employeeId);
                 onConfirm(employeeId);
               }
               onClose();

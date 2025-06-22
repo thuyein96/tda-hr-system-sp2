@@ -30,9 +30,10 @@ export const employeeService = {
     },
   
     // Create new employee
-    createEmployee: async (employee: Omit<EmployeeDto, 'id'>): Promise<EmployeeResponse> => {
+    createEmployee: async (employee: Omit<EmployeeDto, '_id'>): Promise<EmployeeResponse> => {
       try {
-        const response = await fetch(`${API_BASE_URL}/employees`, {
+        console.log("Request body: ", employee);
+        const response = await fetch(`${API_BASE_URL}/employee`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -55,39 +56,39 @@ export const employeeService = {
     },
   
     // Update employee
-    updateEmployee: async (id: string, employee: Partial<EmployeeResponse>): Promise<EmployeeResponse> => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add authorization header if needed
-            // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(employee),
-        });
+    // updateEmployee: async (id: string, employee: Partial<EmployeeResponse>): Promise<EmployeeResponse> => {
+    //   try {
+    //     const response = await fetch(`${API_BASE_URL}/employee/${id}`, {
+    //       method: 'PUT',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //         // Add authorization header if needed
+    //         // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    //       },
+    //       body: JSON.stringify(employee),
+    //     });
   
-        if (!response.ok) {
-          throw new Error(`Failed to update employee: ${response.status} ${response.statusText}`);
-        }
+    //     if (!response.ok) {
+    //       throw new Error(`Failed to update employee: ${response.status} ${response.statusText}`);
+    //     }
   
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error('Error updating employee:', error);
-        throw error;
-      }
-    },
+    //     const data = await response.json();
+    //     return data;
+    //   } catch (error) {
+    //     console.error('Error updating employee:', error);
+    //     throw error;
+    //   }
+    // },
   
     // Delete employee
     deleteEmployee: async (id: string): Promise<void> => {
       try {
-        const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/employee/${id}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
             // Add authorization header if needed
-            // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
         });
   
@@ -101,17 +102,19 @@ export const employeeService = {
     },
   
     // Update employee status
-    updateEmployeeStatus: async (id: string, status: 'Active' | 'On leave'): Promise<EmployeeResponse> => {
+    updateEmployee: async (id: string, status: string): Promise<EmployeeResponse> => {
       try {
-        const response = await fetch(`${API_BASE_URL}/employees/${id}/status`, {
+        console.log(status);
+        const response = await fetch(`${API_BASE_URL}/employee/${id}/status`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             // Add authorization header if needed
-            // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
           body: JSON.stringify({ status }),
         });
+        console.log(JSON.stringify({ status }));
   
         if (!response.ok) {
           throw new Error(`Failed to update employee status: ${response.status} ${response.statusText}`);
