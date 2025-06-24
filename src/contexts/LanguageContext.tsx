@@ -28,6 +28,8 @@ interface EmployeePageTranslations {
   actionColumn: string;
   editButton: string;
   address: string;
+  name: string; // NEW: Address label for modal
+  status: string; // NEW: Status label for modal
   // --- NEW MODAL TRANSLATION KEYS ---
   addNewEmployeeTitle: string;
   fullNamePlaceholder: string;
@@ -288,6 +290,8 @@ const allAppTranslations: AllTranslationsCollection = {
       actionColumn: "Action",
       editButton: "Edit",
       address: "Address",
+      name: "Name", // Added missing property
+      status: "Status", // Added missing property
       // --- MODAL TRANSLATIONS ---
       addNewEmployeeTitle: "Add new employee",
       fullNamePlaceholder: "Full Name",
@@ -506,6 +510,8 @@ const allAppTranslations: AllTranslationsCollection = {
       actionColumn: "လုပ်ဆောင်ချက်",
       editButton: "ပြင်ဆင်ရန်",
       address: "လိပ်စာ",
+      name: "အမည်", // Added missing property
+      status: "အခြေအနေ", // Added missing property
       // --- MODAL TRANSLATIONS ---
       addNewEmployeeTitle: "ဝန်ထမ်းအသစ်ထည့်ရန်",
       fullNamePlaceholder: "အမည်အပြည့်အစုံ",

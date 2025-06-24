@@ -6,6 +6,7 @@ import { employeeService } from '@/services/employeeService';
 import AddEmployeeModal from '@/components/AddEmployeeModal/AddEmployeeModal';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal/ConfirmDeleteModal';
 import { EmployeeDto } from '@/dtos/employee/EmployeeDto';
+import { ChevronUp } from 'lucide-react';
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -47,18 +48,17 @@ interface StatusChangerProps {
   onStatusChange: (employeeId: string, newStatus: string) => void;
 }
 
-const StatusChanger: React.FC<StatusChangerProps> = ({ 
-  employeeId, 
-  employeeName, 
-  currentStatus, 
-  translations, 
-  onStatusChange 
+const StatusChanger: React.FC<StatusChangerProps> = ({
+  employeeId,
+  employeeName,
+  currentStatus,
+  translations,
+  onStatusChange
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Map API status to UI display
   const getStatusDisplay = (status: string) => {
     return status === 'active' ? translations.active : translations.onLeave;
   };
@@ -150,13 +150,16 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [employeeToDeleteDetails, setEmployeeToDeleteDetails] = useState<{ id: string, name: string } | null>(null);
   const [selectedEmployeeForEdit, setSelectedEmployeeForEdit] = useState<EmployeeResponse | undefined>(undefined);
-
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const { language, translations } = useLanguage();
   const employeePageTranslations = translations.employeePage;
+
+  const [sortField, setSortField] = useState<'joinedDate' | 'name' | 'status'>('joinedDate');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchEmployees();
@@ -186,20 +189,17 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   const totalEmployees = filteredEmployees.length;
   const activeEmployees = filteredEmployees.filter(emp => emp.status === 'active').length;
   const onLeaveEmployees = filteredEmployees.filter(emp => emp.status === 'on_leave').length;
-
   const totalPages = Math.max(1, Math.ceil(totalEmployees / itemsPerPage));
 
   useEffect(() => {
-    // When search query changes, reset to the first page
     setCurrentPage(1);
   }, [searchQuery]);
 
   useEffect(() => {
-    // Adjust current page if it's out of bounds after filtering or data changes
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
     } else if (totalPages === 0) {
-      setCurrentPage(1); // If no employees, stay on page 1
+      setCurrentPage(1);
     }
   }, [totalPages, currentPage]);
 
@@ -231,7 +231,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
         await employeeService.createEmployee(employee);
         console.log(`Created new employee:`, employee);
       }
-
       await fetchEmployees();
     } catch (error) {
       console.error('Failed to save employee:', error);
@@ -240,7 +239,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
       setSelectedEmployeeForEdit(undefined);
     }
   };
-
 
   const handleConfirmDeleteClick = (employee: EmployeeResponse) => {
     setEmployeeToDeleteDetails({ id: employee._id, name: employee.name });
@@ -270,6 +268,40 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     }
   };
 
+  const handleSortChange = (field: 'joinedDate' | 'name' | 'status') => {
+    if (field === sortField) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
+    let aValue: any;
+    let bValue: any;
+    switch (sortField) {
+      case 'joinedDate':
+        aValue = new Date(a.joinedDate || 0).getTime();
+        bValue = new Date(b.joinedDate || 0).getTime();
+        break;
+      case 'name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'status':
+        const order = { active: 1, on_leave: 2 };
+        aValue = order[a.status] || 99;
+        bValue = order[b.status] || 99;
+        break;
+    }
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const currentEmployeesSorted = sortedEmployees.slice(startIndex, endIndex);
+
   if (loading) {
     return (
       <div className="absolute top-24 left-1/2 transform -translate-x-1/2">
@@ -285,39 +317,20 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
       </div>
     );
   }
-  // Function to handle status change
 
   const handleStatusChange = async (employeeId: string, newStatus: string) => {
     try {
       await employeeService.updateEmployeeStatus(employeeId, newStatus);
-      
-      setEmployees(prevEmployees => 
-        prevEmployees.map(emp => 
+      setEmployees(prevEmployees =>
+        prevEmployees.map(emp =>
           emp._id === employeeId ? { ...emp, status: newStatus } : emp
         )
       );
-      
       console.log(`Successfully updated employee ${employeeId} status to ${newStatus}`);
     } catch (error) {
       console.error('Failed to update employee status:', error);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading employees...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-red-500">Error: {error}</div>
-      </div>
-    );
-  }
 
   return (
     <div className="font-sans antialiased text-gray-800">
@@ -362,10 +375,42 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
               <h2 className="text-xl font-bold">{employeePageTranslations.employees}</h2>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <div className="flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm cursor-pointer w-full sm:w-auto">
-                <span className="font-medium text-gray-700">{employeePageTranslations.sortBy}</span>
-                <span className="font-semibold text-gray-900">{employeePageTranslations.joinDate}</span>
-                <ChevronDown className="w-4 h-4 text-gray-500" />
+              <div className="relative" ref={sortDropdownRef}>
+                <button
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                  className="flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm cursor-pointer w-full sm:w-auto"
+                >
+                  <span className="font-medium text-gray-700">{employeePageTranslations.sortBy}</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    {sortField === 'joinedDate' && employeePageTranslations.joinDate}
+                    {sortField === 'name' && 'Name'}
+                    {sortField === 'status' && 'Status'}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-gray-500 ml-2" />
+                </button>
+
+                {isSortDropdownOpen && (
+                  <div className="absolute mt-1 w-40 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
+                    <button
+                      onClick={() => { handleSortChange('joinedDate'); setIsSortDropdownOpen(false); }}
+                      className={`block w-full text-left px-4 py-2 text-sm ${sortField === 'joinedDate' ? 'font-bold bg-gray-100' : ''} hover:bg-gray-100`}
+                    >
+                      {employeePageTranslations.joinDate} {sortField === 'joinedDate' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+                    </button>
+                    <button
+                      onClick={() => { handleSortChange('name'); setIsSortDropdownOpen(false); }}
+                      className={`block w-full text-left px-4 py-2 text-sm ${sortField === 'name' ? 'font-bold bg-gray-100' : ''} hover:bg-gray-100`}
+                    >
+                      Name {sortField === 'name' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+                    </button>
+                    <button
+                      onClick={() => { handleSortChange('status'); setIsSortDropdownOpen(false); }}
+                      className={`block w-full text-left px-4 py-2 text-sm ${sortField === 'status' ? 'font-bold bg-gray-100' : ''} hover:bg-gray-100`}
+                    >
+                      Status {sortField === 'status' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+                    </button>
+                  </div>
+                )}
               </div>
               <button
                 onClick={handleOpenAddModal}
@@ -382,7 +427,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
               <thead>
                 <tr className="text-left text-gray-600 border-b border-gray-200 bg-gray-50">
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.fullNameColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{employeePageTranslations.employeeIdColumn}</th>
+                  <th className="py -3 px-4 font-semibold">{employeePageTranslations.employeeIdColumn}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.phoneNumberColumn}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.address}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.roleColumn}</th>
@@ -392,7 +437,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                 </tr>
               </thead>
               <tbody>
-                {currentEmployees.map(emp => (
+                {currentEmployeesSorted.map(emp => (
                   <tr key={emp._id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium text-gray-900">{emp.name}</td>
                     <td className="py-3 px-4 text-gray-700">{emp._id}</td>
@@ -400,7 +445,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                     <td className="py-3 px-4 text-gray-700">{emp.address}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.position}</td>
                     <td className="py-3 px-4 text-gray-700">
-                      {emp.joinedDate?.split("T", 1)[0] || 'N/A'} {/* FIX: Added optional chaining and index access */}
+                      {emp.joinedDate?.split("T", 1)[0] || 'N/A'}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <StatusChanger
@@ -411,7 +456,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                           ...employeePageTranslations,
                           deleteButton: String(employeePageTranslations.deleteButton),
                           editButton: String(employeePageTranslations.editButton),
-                          // Add similar lines for any other fields that might not be string
                         }}
                         onStatusChange={handleStatusChange}
                       />
@@ -487,7 +531,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                 status:
                   selectedEmployeeForEdit.status === 'active' || selectedEmployeeForEdit.status === 'on_leave'
                     ? selectedEmployeeForEdit.status
-                    : 'active', // fallback or handle as needed
+                    : 'active',
               }
             : null
         }
@@ -506,4 +550,4 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   );
 };
 
-export default Employee; 
+export default Employee;
