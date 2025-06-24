@@ -34,7 +34,7 @@ export const employeeService = {
       try {
         console.log("Request body: ", employee);
         // TODO: remove time after API fix
-        employee.joinedDate = new Date(employee.joinedDate).toISOString();
+        employee.joinedDate = "2025-06-24T02:55:54.187Z"
         const response = await fetch(`${API_BASE_URL}/employee`, {
           method: 'POST',
           headers: {

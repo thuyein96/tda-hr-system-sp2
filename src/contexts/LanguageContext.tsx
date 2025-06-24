@@ -21,6 +21,7 @@ interface EmployeePageTranslations {
   fullNameColumn: string;
   employeeIdColumn: string;
   phoneNumberColumn: string;
+  addressColumn: string; // NEW: Address column
   roleColumn: string;
   joinDateColumn: string;
   statusColumn: string;
@@ -32,6 +33,7 @@ interface EmployeePageTranslations {
   fullNamePlaceholder: string;
   baseRatePlaceholder: string;
   phoneNumberPlaceholder: string;
+  addressPlaceholder: string; // NEW: Address placeholder
   rolePlaceholder: string;
   joinDatePlaceholder: string;
   selectTypeLabel: string;
@@ -271,6 +273,7 @@ const allAppTranslations: AllTranslationsCollection = {
       allEmployees: "All Employees",
       sortBy: "Sort by:",
       joinDate: "Join Date",
+      addressPlaceholder: "Address", // NEW: Address placeholder
       addNewEmployee: "Add New Employee",
       showing: "Showing",
       of: "of",
@@ -278,6 +281,7 @@ const allAppTranslations: AllTranslationsCollection = {
       fullNameColumn: "Full Name",
       employeeIdColumn: "Employee ID",
       phoneNumberColumn: "Phone Number",
+      addressColumn: "Address", // NEW: Address column
       roleColumn: "Role",
       joinDateColumn: "Join Date",
       statusColumn: "Status",
@@ -488,12 +492,14 @@ const allAppTranslations: AllTranslationsCollection = {
       sortBy: "စီစစ်ရန်:",
       joinDate: "ဝင်ရောက်သည့်နေ့စွဲ",
       addNewEmployee: "ဝန်ထမ်းအသစ်ထည့်ရန်",
+      addressPlaceholder : "လိပ်စာ", // NEW: Address placeholder
       showing: "ပြသနေသည်",
       of: "၏",
       employees: "ဝန်ထမ်းများ",
       fullNameColumn: "အမည်အပြည့်အစုံ",
       employeeIdColumn: "ဝန်ထမ်း ID",
       phoneNumberColumn: "ဖုန်းနံပါတ်",
+      addressColumn: "လိပ်စာ", // NEW: Address column
       roleColumn: "ရာထူး",
       joinDateColumn: "ပူးပေါင်းသည့်နေ့",
       statusColumn: "အခြေအနေ",

@@ -71,7 +71,7 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
           type="text"
           placeholder={translations.phoneNumberPlaceholder}
           value={phoneNumber}
-          onChange={(e) => setAddress(e.target.value)}
+          onChange={(e) => setPhoneNumber(e.target.value)}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
           required
         />
