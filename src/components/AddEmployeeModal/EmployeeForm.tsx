@@ -21,6 +21,8 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
     status, setStatus
   } = useEmployeeForm(employeeToEdit, true);
 
+  const isEditing = !!employeeToEdit;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -41,8 +43,8 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
 
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white rounded-2xl w-full max-w-md mx-auto"> {/* Removed shadow-md */}
+ return (
+    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white rounded-2xl w-full max-w-md mx-auto">
       {/* Full Name */}
       <div>
         <label htmlFor="fullName" className="block text-sm font-medium text-gray-600 mb-1">
@@ -135,78 +137,22 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
         </div>
       </div>
 
-        <div>
-            <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
-            {translations.rolePlaceholder}
-            </label>
-            <input
-            id="role"
-            type="text"
-            placeholder={translations.rolePlaceholder}
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            required
-            />
-        </div>
-
-        <div>
-            <label htmlFor="joinDate" className="block text-sm font-semibold text-gray-700 mb-2">
-            {translations.joinDatePlaceholder}
-            </label>
-            <input
-            id="joinDate"
-            type="date"
-            value={joinDate}
-            onChange={(e) => setJoinDate(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            required
-            />
-        </div>
-
-        <div>
-            <p className="text-gray-700 font-semibold mb-2">{translations.selectTypeLabel}</p>
-            <div className="flex gap-6">
-            <label className="inline-flex items-center">
-                <input
-                type="radio"
-                name="status"
-                value="active"
-                checked={status === 'active'}
-                onChange={() => setStatus('active')}
-                className="form-radio text-blue-500 h-5 w-5"
-                />
-                <span className="ml-2 text-sm text-gray-700">{translations.activeStatus}</span>
-            </label>
-            <label className="inline-flex items-center">
-                <input
-                type="radio"
-                name="status"
-                value="on_leave"
-                checked={status === 'on_leave'}
- onChange={() => setStatus('on_leave')} // Set the status to "on_leave" here
-                className="form-radio text-blue-500 h-5 w-5"
-                />
-                <span className="ml-2 text-sm text-gray-700">{translations.onLeaveStatus}</span>
-            </label>
-            </div>
-        </div>
-
-        <div className="flex justify-end gap-4 pt-4">
-            <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
-            >
-            {translations.cancelButton}
-            </button>
-            <button
-            type="submit"
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
-            >
-            {translations.addButton}
-            </button>
-        </div>
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-3 pt-4">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+        >
+          {translations.cancelButton}
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-[#FF6767] text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
+        >
+          {isEditing ? translations.saveChangesButton : translations.addButton}
+        </button>
+      </div>
     </form>
   );
 };

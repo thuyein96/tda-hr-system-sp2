@@ -186,8 +186,8 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   };
 
   // Todo: Need to change model 
-  const handleSaveEmployee = (employee: EmployeeDto, isEditing: boolean) => {
-    console.log(`[UI-ONLY] ${isEditing ? 'Saved' : 'Added'} Employee data (would send to backend):`, employee);
+  const handleSaveEmployee = (employee: EmployeeDto) => {
+    console.log(`[UI-ONLY] Saved/Added Employee data (would send to backend):`, employee);
   };
 
   const handleConfirmDeleteClick = (employee: EmployeeResponse) => {
