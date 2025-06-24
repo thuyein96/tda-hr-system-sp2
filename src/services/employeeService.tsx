@@ -33,6 +33,8 @@ export const employeeService = {
     createEmployee: async (employee: Omit<EmployeeDto, '_id'>): Promise<EmployeeResponse> => {
       try {
         console.log("Request body: ", employee);
+        // TODO: remove time after API fix
+        employee.joinedDate = new Date(employee.joinedDate).toISOString();
         const response = await fetch(`${API_BASE_URL}/employee`, {
           method: 'POST',
           headers: {

@@ -276,6 +276,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.fullNameColumn}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.employeeIdColumn}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.phoneNumberColumn}</th>
+                  <th className="py-3 px-4 font-semibold">{employeePageTranslations.address}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.roleColumn}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.joinDateColumn}</th>
                   <th className="py-3 px-4 font-semibold text-center">{employeePageTranslations.statusColumn}</th>
@@ -288,6 +289,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                     <td className="py-3 px-4 font-medium text-gray-900">{emp.name}</td>
                     <td className="py-3 px-4 text-gray-700">{emp._id}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.phoneNumber}</td>
+                    <td className="py-3 px-4 text-gray-700">{emp.address}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.position}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.joinedDate.split("T",1)}</td>
                     <td className="py-3 px-4 text-center">

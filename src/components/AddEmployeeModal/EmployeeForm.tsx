@@ -71,7 +71,23 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
           type="text"
           placeholder={translations.phoneNumberPlaceholder}
           value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
+          onChange={(e) => setAddress(e.target.value)}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+          required
+        />
+      </div>
+
+      {/* Address - Now a single, full-width input */}
+      <div>
+        <label htmlFor="address" className="block text-sm font-medium text-gray-600 mb-1">
+          {translations.addressColumn}
+        </label>
+        <input
+          id="address"
+          type="text"
+          placeholder={translations.addressPlaceholder}
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
           required
         />

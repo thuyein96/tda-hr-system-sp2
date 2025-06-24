@@ -26,6 +26,7 @@ interface EmployeePageTranslations {
   statusColumn: string;
   actionColumn: string;
   editButton: string;
+  address: string;
   // --- NEW MODAL TRANSLATION KEYS ---
   addNewEmployeeTitle: string;
   fullNamePlaceholder: string;
@@ -282,6 +283,7 @@ const allAppTranslations: AllTranslationsCollection = {
       statusColumn: "Status",
       actionColumn: "Action",
       editButton: "Edit",
+      address: "Address",
       // --- MODAL TRANSLATIONS ---
       addNewEmployeeTitle: "Add new employee",
       fullNamePlaceholder: "Full Name",
@@ -497,6 +499,7 @@ const allAppTranslations: AllTranslationsCollection = {
       statusColumn: "အခြေအနေ",
       actionColumn: "လုပ်ဆောင်ချက်",
       editButton: "ပြင်ဆင်ရန်",
+      address: "လိပ်စာ",
       // --- MODAL TRANSLATIONS ---
       addNewEmployeeTitle: "ဝန်ထမ်းအသစ်ထည့်ရန်",
       fullNamePlaceholder: "အမည်အပြည့်အစုံ",
