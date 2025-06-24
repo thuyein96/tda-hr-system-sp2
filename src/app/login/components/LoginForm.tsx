@@ -53,9 +53,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ setIsLoggedIn }) => {
       setIsLoggedIn(true); // 🎉 Crucial: Update the global authentication state in App.tsx!
 
       setSignInResponse(data);
-      console.log("TOKEN: ", signInResponse.accessToken);
-      localStorage.setItem('token', signInResponse.accessToken); // Store the token in localStorage for future requests
-      localStorage.setItem('user', JSON.stringify(signInResponse.username)); // Store user data in localStorage
+
+      localStorage.setItem('token', data.accessToken); // Store the token in localStorage for future requests
+      localStorage.setItem('user', JSON.stringify(data.username)); // Store user data in localStorage
+      
       // Optionally, you can also set the token in a global state or context if neede
       setTimeout(() => {
         navigate('/dashboard'); // Navigate to the dashboard after successful login
