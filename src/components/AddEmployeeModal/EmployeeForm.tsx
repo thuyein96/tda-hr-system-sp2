@@ -1,17 +1,18 @@
+// EmployeeForm.tsx
 import React from 'react';
-import { X } from 'lucide-react';
 import { useEmployeeForm } from './useEmployeeForm';
 import { employeeService } from '@/services/employeeService';
 import { EmployeeDto } from '@/dtos/employee/EmployeeDto';
+import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 
 interface Props {
-  employeeToEdit?: EmployeeDto;
+  employeeToEdit?: EmployeeResponse;
   onSave: (employee: EmployeeDto) => void;
   onClose: () => void;
   translations: any;
 }
 
-export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose, translations }) => {
+const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose, translations }) => {
   const {
     fullName, setFullName,
     phoneNumber, setPhoneNumber,
@@ -19,33 +20,45 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
     joinDate, setJoinDate,
     address, setAddress,
     status, setStatus
-  } = useEmployeeForm(employeeToEdit, true);
+  } = useEmployeeForm(employeeToEdit);
 
-  const isEditing = !!employeeToEdit;
+  const isEditing = Boolean(employeeToEdit);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
 
-    //TODO: change the static data
-    const submittedEmployeeData: EmployeeDto = {
-      name: fullName,
-      phoneNumber,
-      address: address,
-      position: role,
-      status: status, // Use the status from the form state
-      joinedDate: joinDate,
-    };
-
-    await employeeService.createEmployee(submittedEmployeeData);
-
-    onSave(submittedEmployeeData);
-    onClose();
-
+  const submittedEmployeeData: EmployeeDto = {
+    name: fullName,
+    phoneNumber,
+    address,
+    position: role,
+    status,
+    joinedDate: joinDate,
   };
 
- return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white rounded-2xl w-full max-w-md mx-auto">
-      {/* Full Name */}
+  // Update UI immediately and close modal
+  onSave(submittedEmployeeData);
+  onClose();
+
+  // Run API call in background, no await
+  (async () => {
+    try {
+      if (isEditing && employeeToEdit) {
+        await employeeService.updateEmployee(employeeToEdit._id, submittedEmployeeData);
+      } else {
+        await employeeService.createEmployee(submittedEmployeeData);
+      }
+    } catch (error) {
+      console.error('Error saving employee:', error);
+      // Optional: show error toast here
+    }
+  })();
+};
+
+
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="fullName" className="block text-sm font-medium text-gray-600 mb-1">
           {translations.fullNameColumn}
@@ -61,7 +74,6 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
         />
       </div>
 
-      {/* Phone Number - Now a single, full-width input */}
       <div>
         <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-600 mb-1">
           {translations.phoneNumberColumn}
@@ -77,7 +89,6 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
         />
       </div>
 
-      {/* Address - Now a single, full-width input */}
       <div>
         <label htmlFor="address" className="block text-sm font-medium text-gray-600 mb-1">
           {translations.addressColumn}
@@ -93,7 +104,6 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
         />
       </div>
 
-      {/* Role */}
       <div>
         <label htmlFor="role" className="block text-sm font-medium text-gray-600 mb-1">
           {translations.roleColumn}
@@ -109,7 +119,6 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
         />
       </div>
 
-      {/* Join Date */}
       <div>
         <label htmlFor="joinDate" className="block text-sm font-medium text-gray-600 mb-1">
           {translations.joinDateColumn}
@@ -124,7 +133,6 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
         />
       </div>
 
-      {/* Status Radio Buttons */}
       <div>
         <p className="block text-sm font-medium text-gray-600 mb-1">{translations.selectTypeLabel}</p>
         <div className="flex gap-6 mt-2">
@@ -153,7 +161,6 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex justify-end gap-3 pt-4">
         <button
           type="button"
@@ -172,3 +179,5 @@ export const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose,
     </form>
   );
 };
+
+export default EmployeeForm;

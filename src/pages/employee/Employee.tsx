@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Users, Plus, ChevronLeft, ChevronRight, ChevronDown, Check, X, Edit, Trash2 } from 'lucide-react';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 import { employeeService } from '@/services/employeeService';
-import { AddEmployeeModal } from '@/components/AddEmployeeModal/AddEmployeeModal';
+import AddEmployeeModal from '@/components/AddEmployeeModal/AddEmployeeModal';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal/ConfirmDeleteModal';
 import { EmployeeDto } from '@/dtos/employee/EmployeeDto';
 
-
-// -------------------------------------------------------------------------
-// ConfirmDeleteModal Component (UI-focused, logs action on confirm)
-// -------------------------------------------------------------------------
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,30 +15,55 @@ interface ConfirmDeleteModalProps {
   employeeName: string;
 }
 
-
-// -------------------------------------------------------------------------
-// StatusChanger Component (New for inline status change UI)
-// -------------------------------------------------------------------------
 interface EmployeePageTranslations {
   active: string;
   onLeave: string;
   activeStatus: string;
   onLeaveStatus: string;
-  // Add any other translation keys used in StatusChanger if needed
+  totalEmployee: string;
+  employees: string;
+  sortBy: string;
+  joinDate: string;
+  addNewEmployee: string;
+  fullNameColumn: string;
+  employeeIdColumn: string;
+  phoneNumberColumn: string;
+  address: string;
+  roleColumn: string;
+  joinDateColumn: string;
+  statusColumn: string;
+  actionColumn: string;
+  editButton: string;
+  deleteButton: string;
+  showing: string;
+  of: string;
 }
 
 interface StatusChangerProps {
   employeeId: string;
   employeeName: string;
-  currentStatus: 'active' | 'on_leave';
+  currentStatus: string;
   translations: EmployeePageTranslations;
+  onStatusChange: (employeeId: string, newStatus: string) => void;
 }
 
-const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName, currentStatus, translations }) => {
+const StatusChanger: React.FC<StatusChangerProps> = ({ 
+  employeeId, 
+  employeeName, 
+  currentStatus, 
+  translations, 
+  onStatusChange 
+}) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const getBadgeStyle = (status: 'active' | 'on_leave') => {
+  // Map API status to UI display
+  const getStatusDisplay = (status: string) => {
+    return status === 'active' ? translations.active : translations.onLeave;
+  };
+
+  const getBadgeStyle = (status: string) => {
     return status === 'active' ? {
       bg: 'bg-[#E6FAF7]',
       text: 'text-[#00B09A]'
@@ -65,12 +86,19 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
     };
   }, []);
 
-  const handleStatusChange = (newStatus: 'active' | 'on_leave') => {
-    employeeService.updateEmployee(employeeId, newStatus)
-    console.log(`[UI-ONLY] Attempting to change status for Employee ID: ${employeeId} (${employeeName}) from "${currentStatus}" to "${newStatus}". (This change is not persistent as data is static)`);
-    setIsOpen(false); // Close dropdown after selection
-    // In a real app, you would send an API call here to update the status in the backend.
-    // The parent component would then re-fetch or update its state to reflect the change.
+  const handleStatusChange = async (newStatus: string) => {
+    if (isUpdating || newStatus === currentStatus) return;
+
+    try {
+      setIsUpdating(true);
+      console.log(`Changing status for Employee ID: ${employeeId} (${employeeName}) from "${currentStatus}" to "${newStatus}"`);
+      await onStatusChange(employeeId, newStatus);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Failed to update status:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const currentBadgeStyle = getBadgeStyle(currentStatus);
@@ -79,9 +107,10 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
     <div className="relative inline-block" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${currentBadgeStyle.bg} ${currentBadgeStyle.text} hover:opacity-80 transition-opacity`}
+        disabled={isUpdating}
+        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${currentBadgeStyle.bg} ${currentBadgeStyle.text} hover:opacity-80 transition-opacity ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <span>{currentStatus === 'active' ? translations.active : translations.onLeave}</span>
+        <span>{getStatusDisplay(currentStatus)}</span>
         <ChevronDown className="w-3 h-3 ml-1" />
       </button>
 
@@ -90,13 +119,15 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
           <div className="py-1">
             <button
               onClick={() => handleStatusChange('active')}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              disabled={isUpdating}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
             >
               {translations.activeStatus}
             </button>
             <button
               onClick={() => handleStatusChange('on_leave')}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              disabled={isUpdating}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
             >
               {translations.onLeaveStatus}
             </button>
@@ -107,10 +138,6 @@ const StatusChanger: React.FC<StatusChangerProps> = ({ employeeId, employeeName,
   );
 };
 
-
-// -------------------------------------------------------------------------
-// Employee Component (Main Page - UI)
-// -------------------------------------------------------------------------
 interface EmployeeProps {
   currentPath?: string;
   searchQuery?: string;
@@ -156,23 +183,33 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     emp.phoneNumber.includes(searchQuery)
   );
 
-  // need to change later : Bro Thu Yein
   const totalEmployees = filteredEmployees.length;
-  const activeEmployees = filteredEmployees.filter(emp => emp.position === 'active').length;
-  const onLeaveEmployees = filteredEmployees.filter(emp => emp.position === 'on_leave').length;
+  const activeEmployees = filteredEmployees.filter(emp => emp.status === 'active').length;
+  const onLeaveEmployees = filteredEmployees.filter(emp => emp.status === 'on_leave').length;
 
-  const totalPages = Math.ceil(totalEmployees / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentEmployees = filteredEmployees.slice(startIndex, endIndex);
+  const totalPages = Math.max(1, Math.ceil(totalEmployees / itemsPerPage));
 
   useEffect(() => {
+    // When search query changes, reset to the first page
     setCurrentPage(1);
   }, [searchQuery]);
 
+  useEffect(() => {
+    // Adjust current page if it's out of bounds after filtering or data changes
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0) {
+      setCurrentPage(1); // If no employees, stay on page 1
+    }
+  }, [totalPages, currentPage]);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalEmployees);
+  const currentEmployees = filteredEmployees.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    const clampedPage = Math.max(1, Math.min(page, totalPages));
+    setCurrentPage(clampedPage);
   };
 
   const handleOpenAddModal = () => {
@@ -185,58 +222,132 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     setIsAddModalOpen(true);
   };
 
-  // Todo: Need to change model 
-  const handleSaveEmployee = (employee: EmployeeDto) => {
-    console.log(`[UI-ONLY] Saved/Added Employee data (would send to backend):`, employee);
+  const handleSaveEmployee = async (employee: EmployeeDto) => {
+    try {
+      if (selectedEmployeeForEdit) {
+        await employeeService.updateEmployee(selectedEmployeeForEdit._id, employee);
+        console.log(`Updated employee:`, employee);
+      } else {
+        await employeeService.createEmployee(employee);
+        console.log(`Created new employee:`, employee);
+      }
+
+      await fetchEmployees();
+    } catch (error) {
+      console.error('Failed to save employee:', error);
+    } finally {
+      setIsAddModalOpen(false);
+      setSelectedEmployeeForEdit(undefined);
+    }
   };
+
 
   const handleConfirmDeleteClick = (employee: EmployeeResponse) => {
     setEmployeeToDeleteDetails({ id: employee._id, name: employee.name });
     setIsDeleteConfirmModalOpen(true);
   };
 
-  const handleExecuteDelete = (id: string) => {
-    console.log(`[UI-ONLY] Executed deletion for employee ID: ${id} (would call backend delete API)`);
+  const handleExecuteDelete = async (id: string) => {
+    try {
+      await employeeService.deleteEmployee(id);
+      console.log(`Successfully deleted employee ID: ${id}`);
+      await fetchEmployees();
+      const updatedFilteredEmployees = employees.filter(emp => emp._id !== id)
+        .filter(emp =>
+          emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          emp._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          emp.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          emp.phoneNumber.includes(searchQuery)
+        );
+      const newTotalPages = Math.max(1, Math.ceil(updatedFilteredEmployees.length / itemsPerPage));
+      if (currentPage > newTotalPages) {
+        setCurrentPage(newTotalPages);
+      }
+    } catch (error) {
+      console.error('Failed to delete employee:', error);
+    } finally {
+      setIsDeleteConfirmModalOpen(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="absolute top-24 left-1/2 transform -translate-x-1/2">
+        <div className="text-sm text-gray-500 animate-pulse">Loading employees...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="absolute top-24 left-1/2 transform -translate-x-1/2">
+        <div className="text-sm text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
+  // Function to handle status change
+
+  const handleStatusChange = async (employeeId: string, newStatus: string) => {
+    try {
+      await employeeService.updateEmployeeStatus(employeeId, newStatus);
+      
+      setEmployees(prevEmployees => 
+        prevEmployees.map(emp => 
+          emp._id === employeeId ? { ...emp, status: newStatus } : emp
+        )
+      );
+      
+      console.log(`Successfully updated employee ${employeeId} status to ${newStatus}`);
+    } catch (error) {
+      console.error('Failed to update employee status:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading employees...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="font-sans antialiased text-gray-800">
       <div className="space-y-4">
         {/* Stats Section */}
         <div className="bg-white rounded-2xl p-4 flex flex-col md:flex-row items-center md:justify-evenly gap-4 md:gap-6 shadow-sm">
-          {/* Stat Item 1: Total Employees */}
-          {/* Added w-full for explicit full width on mobile */}
           <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
             <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Users className="text-red-500 w-7 h-7" />
             </div>
-            {/* Removed 'text-center' from this div for better mobile readability */}
             <div>
               <p className="text-sm text-gray-500 font-medium">{employeePageTranslations.totalEmployee}</p>
               <p className="text-3xl font-bold mt-1">{totalEmployees}</p>
             </div>
           </div>
 
-          {/* Stat Item 2: Active Employees */}
-          {/* Added w-full for explicit full width on mobile */}
           <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
             <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Check className="text-green-500 w-7 h-7" />
             </div>
-            {/* Removed 'text-center' from this div for better mobile readability */}
             <div>
               <p className="text-sm text-gray-500 font-medium">{employeePageTranslations.active}</p>
               <p className="text-3xl font-bold mt-1">{activeEmployees}</p>
             </div>
           </div>
 
-          {/* Stat Item 3: On Leave Employees */}
-          {/* Added w-full for explicit full width on mobile */}
           <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
             <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
               <X className="text-red-500 w-7 h-7" />
             </div>
-            {/* Removed 'text-center' from this div for better mobile readability */}
             <div>
               <p className="text-sm text-gray-500 font-medium">{employeePageTranslations.onLeave}</p>
               <p className="text-3xl font-bold mt-1">{onLeaveEmployees}</p>
@@ -246,22 +357,19 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
 
         {/* Table Header/Actions */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          {/* This div now controls responsive layout for title and actions */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
-            {/* All Employees Title */}
             <div>
               <h2 className="text-xl font-bold">{employeePageTranslations.employees}</h2>
             </div>
-            {/* Sort by and Add New Employee - wrapped for mobile stacking */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"> {/* Changed to flex-col on mobile, flex-row on small+ */}
-              <div className="flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm cursor-pointer w-full sm:w-auto"> {/* Added w-full for mobile */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm cursor-pointer w-full sm:w-auto">
                 <span className="font-medium text-gray-700">{employeePageTranslations.sortBy}</span>
                 <span className="font-semibold text-gray-900">{employeePageTranslations.joinDate}</span>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </div>
               <button
                 onClick={handleOpenAddModal}
-                className="flex items-center justify-center gap-2 px-5 py-2 bg-[#EB5757] text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors w-full sm:w-auto" // Added w-full for mobile
+                className="flex items-center justify-center gap-2 px-5 py-2 bg-[#EB5757] text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 {employeePageTranslations.addNewEmployee}
@@ -291,14 +399,21 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                     <td className="py-3 px-4 text-gray-700">{emp.phoneNumber}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.address}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.position}</td>
-                    <td className="py-3 px-4 text-gray-700">{emp.joinedDate.split("T",1)}</td>
+                    <td className="py-3 px-4 text-gray-700">
+                      {emp.joinedDate?.split("T", 1)[0] || 'N/A'} {/* FIX: Added optional chaining and index access */}
+                    </td>
                     <td className="py-3 px-4 text-center">
                       <StatusChanger
                         employeeId={emp._id}
                         employeeName={emp.name}
-                        // Todo: need to update status later
-                        currentStatus={'active'}
-                        translations={employeePageTranslations}
+                        currentStatus={emp.status}
+                        translations={{
+                          ...employeePageTranslations,
+                          deleteButton: String(employeePageTranslations.deleteButton),
+                          editButton: String(employeePageTranslations.editButton),
+                          // Add similar lines for any other fields that might not be string
+                        }}
+                        onStatusChange={handleStatusChange}
                       />
                     </td>
                     <td className="py-3 px-4 text-center">
@@ -328,7 +443,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-gray-600">
-              {employeePageTranslations.showing} {startIndex + 1} {employeePageTranslations.of} {Math.min(endIndex, totalEmployees)} {employeePageTranslations.of} {totalEmployees} {employeePageTranslations.employees}
+              {employeePageTranslations.showing} {totalEmployees > 0 ? startIndex + 1 : 0} {employeePageTranslations.of} {Math.min(endIndex, totalEmployees)} {employeePageTranslations.of} {totalEmployees} {employeePageTranslations.employees}
             </p>
             <div className="flex justify-center items-center gap-2">
               <button
@@ -338,7 +453,7 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              {totalPages > 0 && Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
@@ -365,7 +480,17 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
       <AddEmployeeModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        employeeToEdit={selectedEmployeeForEdit}
+        employeeToEdit={
+          selectedEmployeeForEdit
+            ? {
+                ...selectedEmployeeForEdit,
+                status:
+                  selectedEmployeeForEdit.status === 'active' || selectedEmployeeForEdit.status === 'on_leave'
+                    ? selectedEmployeeForEdit.status
+                    : 'active', // fallback or handle as needed
+              }
+            : null
+        }
         onSave={handleSaveEmployee}
       />
 
@@ -381,4 +506,4 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   );
 };
 
-export default Employee;
+export default Employee; 

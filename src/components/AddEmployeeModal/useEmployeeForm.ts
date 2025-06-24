@@ -1,24 +1,32 @@
-import { EmployeeDto } from '@/dtos/employee/EmployeeDto';
-import { useEffect, useState } from 'react';
+// useEmployeeForm.ts
+import { useState, useEffect } from 'react';
+import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 
-export function useEmployeeForm(employeeToEdit?: EmployeeDto, isOpen?: boolean) {
+export const useEmployeeForm = (employeeToEdit?: EmployeeResponse) => {
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [role, setRole] = useState('');
   const [joinDate, setJoinDate] = useState('');
   const [address, setAddress] = useState('');
-  const [status, setStatus] = useState<'active' | 'on_leave'>('active');
+  const [status, setStatus] = useState('active');
 
   useEffect(() => {
-    if (isOpen) {
-      setFullName(employeeToEdit?.name || '');
-      setPhoneNumber(employeeToEdit?.phoneNumber || '');
-      setRole(employeeToEdit?.position || '');
-      setJoinDate(employeeToEdit?.joinedDate || '');
-      setAddress(employeeToEdit?.address || '');
-      setStatus('active'); // Default or edit from future backend status
+    if (employeeToEdit) {
+      setFullName(employeeToEdit.name);
+      setPhoneNumber(employeeToEdit.phoneNumber);
+      setRole(employeeToEdit.position);
+      setJoinDate(employeeToEdit.joinedDate ? employeeToEdit.joinedDate.slice(0, 10) : '');
+      setAddress(employeeToEdit.address);
+      setStatus(employeeToEdit.status);
+    } else {
+      setFullName('');
+      setPhoneNumber('');
+      setRole('');
+      setJoinDate('');
+      setAddress('');
+      setStatus('active');
     }
-  }, [employeeToEdit, isOpen]);
+  }, [employeeToEdit]);
 
   return {
     fullName, setFullName,
@@ -28,4 +36,4 @@ export function useEmployeeForm(employeeToEdit?: EmployeeDto, isOpen?: boolean) 
     address, setAddress,
     status, setStatus,
   };
-}
+};
