@@ -118,7 +118,7 @@ interface EmployeeProps {
 
 const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 6;
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [employeeToDeleteDetails, setEmployeeToDeleteDetails] = useState<{ id: string, name: string } | null>(null);

@@ -1,9 +1,9 @@
 // src/components/Layout.tsx
 
-import React, { useState, useRef, useEffect, useCallback } from "react"; // Add useCallback
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"; // Import useSearchParams
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, LogOut, ChevronDown, Menu, X } from "lucide-react";
-import { useIsMobile } from "../hooks/use-mobile";
+import { useIsMobile } from "../hooks/use-mobile"; // Assuming this hook correctly detects mobile
 import { LanguageProvider, useLanguage } from "../contexts/LanguageContext";
 
 // Manual Burmese translations and number converter (as previously defined)
@@ -34,14 +34,13 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
   const { language, setLanguage, translations } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // Replaced searchQuery with useSearchParams
   const [searchParams, setSearchParams] = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
   const isMobile = useIsMobile();
   const sidebarItems = translations.sidebar;
-  const [headerHeight, setHeaderHeight] = useState(80);
+  const [headerHeight, setHeaderHeight] = useState(80); // Default height, will be updated
 
   const today = new Date();
   let displayDay: string;
@@ -60,7 +59,7 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
   }
 
   // Get current search query from URL
-  const currentSearchQuery = searchParams.get('q') || ''; // 'q' is a common query param name
+  const currentSearchQuery = searchParams.get('q') || '';
 
   const handleLogout = () => {
     setIsLoggedIn(false);
@@ -77,22 +76,24 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Effect to dynamically set header height for content padding
   useEffect(() => {
     const updateHeaderHeight = () => {
       if (headerRef.current) {
         setHeaderHeight(headerRef.current.offsetHeight);
       }
     };
-    updateHeaderHeight();
+    updateHeaderHeight(); // Initial call
     window.addEventListener("resize", updateHeaderHeight);
     return () => window.removeEventListener("resize", updateHeaderHeight);
   }, []);
 
+  // Effect to close sidebar when navigating on mobile
   useEffect(() => {
     if (isMobile && sidebarOpen) {
       setSidebarOpen(false);
     }
-  }, [location.pathname, isMobile, sidebarOpen]);
+  }, [location.pathname, isMobile]); // Only re-run when path or mobile status changes. No need for sidebarOpen in dependency for closing it *because* path changed.
 
   const handleBurgerClick = () => {
     setSidebarOpen((prev) => !prev);
@@ -103,16 +104,14 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
     setDropdownOpen(false);
   };
 
-  // --- NEW: Handle search input change ---
   const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     if (newQuery) {
-      setSearchParams({ q: newQuery }); // Set the 'q' query parameter
+      setSearchParams({ q: newQuery });
     } else {
-      setSearchParams({}); // Remove 'q' query parameter if empty
+      setSearchParams({});
     }
-  }, [setSearchParams]);
-  // ----------------------------------------
+  }, [setSearchParams]); // setSearchParams should be in the dependency array for useCallback
 
   return (
     <div className="flex flex-col min-h-screen font-poppins bg-white overflow-hidden">
@@ -129,8 +128,10 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
           {isMobile && (
             <button
               onClick={handleBurgerClick}
-              className="md:hidden text-[#FF6767] p-2"
+              className="md:hidden text-[#FF6767] p-2 relative z-50" // Added z-50 for clickability
               aria-label="Toggle menu"
+              tabIndex={0} // Added for accessibility
+              role="button" // Added for accessibility
             >
               {sidebarOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
@@ -145,8 +146,8 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
               type="text"
               placeholder={translations.searchPlaceholder}
               className="bg-transparent placeholder-[#16151C33] text-[16px] font-light leading-[24px] focus:outline-none w-full"
-              value={currentSearchQuery} // Use currentSearchQuery from URL
-              onChange={handleSearchInputChange} // Use new handler
+              value={currentSearchQuery}
+              onChange={handleSearchInputChange}
             />
           </div>
 
@@ -196,15 +197,26 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
               : "hidden sm:flex flex-col w-[260px] bg-[#FAFAFA] pt-4 px-4 border-r border-gray-200"
           }`}
         >
+          {/* Close button for mobile sidebar (appears when open) */}
+          {isMobile && sidebarOpen && (
+            <div className="flex justify-end pr-2 pt-2 pb-4"> {/* Adjust padding as needed */}
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="text-gray-600 hover:text-gray-800"
+                aria-label="Close sidebar"
+              >
+                <X size={28} />
+              </button>
+            </div>
+          )}
           <nav className="flex-1 space-y-2">
             {sidebarItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                // When navigating, ensure the search query is preserved in the URL
-                // by appending it to the new path.
                 onClick={() => {
-                  if (isMobile) setSidebarOpen(false);
+                  if (isMobile) setSidebarOpen(false); // Close sidebar on nav item click
+                  // Preserve search query if it exists
                   if (currentSearchQuery) {
                     navigate({ pathname: item.path, search: `?q=${currentSearchQuery}` });
                   } else {
@@ -242,7 +254,7 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
         {isMobile && sidebarOpen && (
           <div
             className="fixed inset-0 bg-black opacity-30 z-40"
-            onClick={() => setSidebarOpen(false)}
+            onClick={() => setSidebarOpen(false)} // Close sidebar when clicking overlay
             aria-hidden="true"
           />
         )}
@@ -253,7 +265,7 @@ const LayoutContent = ({ children, setIsLoggedIn }: LayoutProps) => {
             React.isValidElement(child)
               ? React.cloneElement(child as React.ReactElement<any>, {
                   currentPath: location.pathname,
-                  searchQuery: currentSearchQuery, // Pass searchQuery from URL
+                  searchQuery: currentSearchQuery,
                 })
               : child
           )}
