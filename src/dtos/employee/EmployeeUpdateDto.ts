@@ -1,3 +1,8 @@
 export interface EmployeeUpdateDto {
-    status: string;
+    name?: string;
+    phoneNumber?: string;
+    address?: string;
+    position?: string;
+    status?: string;
+    joinedDate?: string;
 }

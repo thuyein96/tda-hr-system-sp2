@@ -1,5 +1,6 @@
 import { EmployeeResponse } from "@/dtos/employee/EmployeeResponse";
 import { EmployeeDto } from "@/dtos/employee/EmployeeDto";
+import {EmployeeUpdateDto} from "@/dtos/employee/EmployeeUpdateDto.ts";
 
 const API_BASE_URL = 'https://tda-backend-khaki.vercel.app/_api';
 
@@ -53,12 +54,11 @@ export const employeeService = {
     }
   },
 
-  updateEmployee: async (id: string, employee: Partial<EmployeeDto>): Promise<EmployeeResponse> => {
+  updateEmployee: async (id: string, employee: Partial<EmployeeUpdateDto>): Promise<EmployeeResponse> => {
     try {
-      if (!id) {
+      if (id == null || id == "" || id === undefined) {
         throw new Error('No employee ID provided for update');
       }
-
 
       const response = await fetch(`${API_BASE_URL}/employee/${id}`, {
         method: 'PATCH', 

@@ -1,4 +1,3 @@
-// AddEmployeeModal.tsx
 import React, { useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { AddEmployeeModalProps } from './types';
@@ -8,13 +7,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   isOpen,
   onClose,
-  employeeToEdit,
+  addEmployeeDto,
   onSave,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const { translations } = useLanguage();
   const modalTranslations = translations.employeePage;
-  const isEditing = Boolean(employeeToEdit);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,13 +47,11 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
         </button>
 
         <h2 className="text-2xl font-bold text-center mb-6">
-          {isEditing
-            ? modalTranslations.editEmployeeTitle || 'Edit Employee'
-            : modalTranslations.addNewEmployeeTitle || 'Add New Employee'}
+          {modalTranslations.addNewEmployeeTitle || 'Add New Employee'}
         </h2>
 
         <EmployeeForm
-          employeeToEdit={employeeToEdit}
+          addEmployeeDto={addEmployeeDto}
           onSave={onSave}
           onClose={onClose}
           translations={modalTranslations}

@@ -6,13 +6,13 @@ import { EmployeeDto } from '@/dtos/employee/EmployeeDto';
 import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 
 interface Props {
-  employeeToEdit?: EmployeeResponse;
+  addEmployeeDto?: EmployeeResponse;
   onSave: (employee: EmployeeDto) => void;
   onClose: () => void;
   translations: any;
 }
 
-const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose, translations }) => {
+const EmployeeForm: React.FC<Props> = ({ addEmployeeDto, onSave, onClose, translations }) => {
   const {
     fullName, setFullName,
     phoneNumber, setPhoneNumber,
@@ -20,9 +20,8 @@ const EmployeeForm: React.FC<Props> = ({ employeeToEdit, onSave, onClose, transl
     joinDate, setJoinDate,
     address, setAddress,
     status, setStatus
-  } = useEmployeeForm(employeeToEdit);
+  } = useEmployeeForm(addEmployeeDto);
 
-  const isEditing = Boolean(employeeToEdit);
 
 const handleSubmit = (e: React.FormEvent) => {
   e.preventDefault();
@@ -43,14 +42,11 @@ const handleSubmit = (e: React.FormEvent) => {
   // Run API call in background, no await
   (async () => {
     try {
-      if (isEditing && employeeToEdit) {
-        await employeeService.updateEmployee(employeeToEdit._id, submittedEmployeeData);
-      } else {
+      if (addEmployeeDto !== null) {
         await employeeService.createEmployee(submittedEmployeeData);
-      }
+      } 
     } catch (error) {
       console.error('Error saving employee:', error);
-      // Optional: show error toast here
     }
   })();
 };
@@ -173,7 +169,7 @@ const handleSubmit = (e: React.FormEvent) => {
           type="submit"
           className="px-6 py-2 bg-[#FF6767] text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
         >
-          {isEditing ? translations.saveChangesButton : translations.addButton}
+          {translations.addButton}
         </button>
       </div>
     </form>

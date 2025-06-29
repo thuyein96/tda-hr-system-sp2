@@ -7,6 +7,8 @@ import AddEmployeeModal from '@/components/AddEmployeeModal/AddEmployeeModal';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal/ConfirmDeleteModal';
 import { EmployeeDto } from '@/dtos/employee/EmployeeDto';
 import { ChevronUp } from 'lucide-react';
+import EditEmployeeModal from "@/components/EditEmployeeModal/EditEmployeeModal.tsx";
+import {EmployeeUpdateDto} from "@/dtos/employee/EmployeeUpdateDto.ts";
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -147,8 +149,10 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [employeeToDeleteDetails, setEmployeeToDeleteDetails] = useState<{ id: string, name: string } | null>(null);
+  const [selectedEmployeeForAdd, setSelectedEmployeeForAdd] = useState<EmployeeResponse | undefined>(undefined);
   const [selectedEmployeeForEdit, setSelectedEmployeeForEdit] = useState<EmployeeResponse | undefined>(undefined);
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -213,32 +217,41 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
   };
 
   const handleOpenAddModal = () => {
-    setSelectedEmployeeForEdit(undefined);
+    setSelectedEmployeeForAdd(undefined);
     setIsAddModalOpen(true);
   };
 
   const handleOpenEditModal = (employee: EmployeeResponse) => {
     setSelectedEmployeeForEdit(employee);
-    setIsAddModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
-  const handleSaveEmployee = async (employee: EmployeeDto) => {
+  const handleSaveEmployee = async (employee: EmployeeResponse) => {
     try {
-      if (selectedEmployeeForEdit) {
-        await employeeService.updateEmployee(selectedEmployeeForEdit._id, employee);
-        console.log(`Updated employee:`, employee);
-      } else {
-        await employeeService.createEmployee(employee);
-        console.log(`Created new employee:`, employee);
+      if (selectedEmployeeForAdd) {
+          setIsAddModalOpen(false);
+          setSelectedEmployeeForAdd(undefined);
+          console.log(`Created new employee:`, employee);
       }
       await fetchEmployees();
     } catch (error) {
       console.error('Failed to save employee:', error);
-    } finally {
-      setIsAddModalOpen(false);
-      setSelectedEmployeeForEdit(undefined);
     }
   };
+  
+  const handleEditEmployee = async (employee: EmployeeResponse) => {
+    try {
+      if (selectedEmployeeForEdit) {
+        await employeeService.updateEmployee(selectedEmployeeForEdit._id, employee);
+        setIsEditModalOpen(false);
+        setSelectedEmployeeForEdit(undefined);
+        console.log(`Updated employee ID: ${selectedEmployeeForEdit._id}`);
+      }
+      await fetchEmployees();
+    } catch (error) {
+      console.error('Failed to edit employee:', error);
+    }
+  }
 
   const handleConfirmDeleteClick = (employee: EmployeeResponse) => {
     setEmployeeToDeleteDetails({ id: employee._id, name: employee.name });
@@ -524,19 +537,20 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
       <AddEmployeeModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        employeeToEdit={
-          selectedEmployeeForEdit
-            ? {
-                ...selectedEmployeeForEdit,
-                status:
-                  selectedEmployeeForEdit.status === 'active' || selectedEmployeeForEdit.status === 'on_leave'
-                    ? selectedEmployeeForEdit.status
-                    : 'active',
-              }
-            : null
+        addEmployeeDto={
+          selectedEmployeeForAdd  
         }
         onSave={handleSaveEmployee}
       />
+
+      {/* Edit Employee Modal */}
+        <EditEmployeeModal
+            employeeId={selectedEmployeeForEdit?._id || ''}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            editEmployeeDto={selectedEmployeeForEdit}
+            onSave={handleEditEmployee}
+        />
 
       {/* Delete Confirmation Modal */}
       <ConfirmDeleteModal
