@@ -24,33 +24,34 @@ const EditEmployeeForm: React.FC<Props> = ({ employeeId, editEmployeeDto, onSave
 
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        const submittedEmployeeData: EmployeeUpdateDto = {
-            name: fullName,
-            phoneNumber,
-            address,
-            position: role,
-            status,
-            joinedDate: joinDate,
-        };
+    if (!employeeId) {
+        console.error("No employee ID provided for update");
+        return;
+    }
 
-        // Update UI immediately and close modal
-        onSave(submittedEmployeeData);
-        onClose();
-
-        // Run API call in background, no await
-        (async () => {
-            try {
-                if (editEmployeeDto !== null) {
-                    await employeeService.updateEmployee(employeeId, submittedEmployeeData);
-                }
-            } catch (error) {
-                console.error('Error saving employee:', error);
-            }
-        })();
+    const submittedEmployeeData: EmployeeUpdateDto = {
+        name: fullName,
+        phoneNumber,
+        address,
+        position: role,
+        status,
+        joinedDate: joinDate,
     };
 
+    onSave(submittedEmployeeData); // Update UI
+    onClose();
+
+    // Async update
+    (async () => {
+        try {
+        await employeeService.updateEmployee(employeeId, submittedEmployeeData);
+        } catch (error) {
+        console.error("Error saving employee:", error);
+        }
+    })();
+    };
 
 
     return (

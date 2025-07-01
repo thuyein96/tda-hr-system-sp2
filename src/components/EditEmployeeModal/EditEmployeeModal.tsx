@@ -1,14 +1,15 @@
 import React, { useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import {EditEmployeeModalProps} from "@/components/EditEmployeeModal/types.ts";
+import { EditEmployeeModalProps } from "@/components/EditEmployeeModal/types.ts";
 import EditEmployeeForm from "@/components/EditEmployeeModal/EditEmployeeForm.tsx";
 
-export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({
+export const EditEmployeeModal: React.FC<EditEmployeeModalProps & { employeeId: string }> = ({
                                                                       isOpen,
                                                                       onClose,
                                                                       editEmployeeDto,
                                                                       onSave,
+                                                                      employeeId,
                                                                   }) => {
     const modalRef = useRef<HTMLDivElement>(null);
     const { translations } = useLanguage();
@@ -49,8 +50,8 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({
                 <h2 className="text-2xl font-bold text-center mb-6">
                     {modalTranslations.editEmployeeTitle || 'Edit Employee'}
                 </h2>
-
                 <EditEmployeeForm
+                    employeeId={employeeId}
                     editEmployeeDto={editEmployeeDto}
                     onSave={onSave}
                     onClose={onClose}

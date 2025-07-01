@@ -56,9 +56,9 @@ export const employeeService = {
 
   updateEmployee: async (id: string, employee: Partial<EmployeeUpdateDto>): Promise<EmployeeResponse> => {
     try {
-      if (id == null || id == "" || id === undefined) {
-        throw new Error('No employee ID provided for update');
-      }
+        if (!id) {
+          throw new Error('No employee ID provided for update');
+        }
 
       const response = await fetch(`${API_BASE_URL}/employee/${id}`, {
         method: 'PATCH', 

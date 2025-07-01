@@ -226,32 +226,64 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEmployee = async (employee: EmployeeResponse) => {
-    try {
-      if (selectedEmployeeForAdd) {
-          setIsAddModalOpen(false);
-          setSelectedEmployeeForAdd(undefined);
-          console.log(`Created new employee:`, employee);
-      }
-      await fetchEmployees();
-    } catch (error) {
-      console.error('Failed to save employee:', error);
-    }
-  };
-  
-  const handleEditEmployee = async (employee: EmployeeResponse) => {
-    try {
-      if (selectedEmployeeForEdit) {
-        await employeeService.updateEmployee(selectedEmployeeForEdit._id, employee);
-        setIsEditModalOpen(false);
-        setSelectedEmployeeForEdit(undefined);
-        console.log(`Updated employee ID: ${selectedEmployeeForEdit._id}`);
-      }
-      await fetchEmployees();
-    } catch (error) {
-      console.error('Failed to edit employee:', error);
-    }
+  // const handleSaveEmployee = async (employee: EmployeeResponse) => {
+  //   try {
+  //     if (selectedEmployeeForAdd) {
+  //         setIsAddModalOpen(false);
+  //         setSelectedEmployeeForAdd(undefined);
+  //         console.log(`Created new employee:`, employee);
+  //     }
+  //     await fetchEmployees();
+  //   } catch (error) {
+  //     console.error('Failed to save employee:', error);
+  //   }
+  // };
+
+  const handleSaveEmployee = async (newEmployee: EmployeeResponse) => {
+  try {
+    setIsAddModalOpen(false);
+    setSelectedEmployeeForAdd(undefined);
+    console.log(`Created new employee:`, newEmployee);
+    await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+
+    await fetchEmployees();
+  } catch (error) {
+    console.error('Failed to save employee:', error);
   }
+};
+
+  
+  // const handleEditEmployee = async (employee: EmployeeResponse) => {
+  //   try {
+  //     if (selectedEmployeeForEdit) {
+  //       await employeeService.updateEmployee(selectedEmployeeForEdit._id, employee);
+  //       setIsEditModalOpen(false);
+  //       setSelectedEmployeeForEdit(undefined);
+  //       console.log(`Updated employee ID: ${selectedEmployeeForEdit._id}`);
+  //     }
+  //     await fetchEmployees();
+  //   } catch (error) {
+  //     console.error('Failed to edit employee:', error);
+  //   }
+  // }
+
+  const handleEditEmployee = async (employee: EmployeeResponse) => {
+  try {
+    if (!selectedEmployeeForEdit || !selectedEmployeeForEdit._id) {
+      console.error('No employee selected for editing');
+      return;
+    }
+
+    await employeeService.updateEmployee(selectedEmployeeForEdit._id, employee);
+    setIsEditModalOpen(false);
+    setSelectedEmployeeForEdit(undefined);
+    console.log(`Updated employee ID: ${selectedEmployeeForEdit._id}`);
+    await fetchEmployees();
+  } catch (error) {
+    console.error('Failed to edit employee:', error);
+  }
+};
+
 
   const handleConfirmDeleteClick = (employee: EmployeeResponse) => {
     setEmployeeToDeleteDetails({ id: employee._id, name: employee.name });
@@ -545,12 +577,13 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
 
       {/* Edit Employee Modal */}
         <EditEmployeeModal
-            employeeId={selectedEmployeeForEdit?._id || ''}
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            editEmployeeDto={selectedEmployeeForEdit}
-            onSave={handleEditEmployee}
+          employeeId={selectedEmployeeForEdit?._id || ''}
+          editEmployeeDto={selectedEmployeeForEdit}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleEditEmployee}
         />
+
 
       {/* Delete Confirmation Modal */}
       <ConfirmDeleteModal
