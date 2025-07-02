@@ -3,6 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Users, ClipboardList, DollarSign, Plus, ChevronDown, Edit, Trash2, X, ChevronLeft, ChevronRight, Box } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext'; // Adjust path as necessary
 import { useSearchParams } from 'react-router-dom'; // Import useSearchParams for global search
+import { ProductService } from '@/services/ProductService';
+import { set } from 'date-fns';
+import { ProductDto } from '@/dtos/product/productDto';
 
 // --- DTOs ---
 // Employee Response DTO (if coming from a backend)
