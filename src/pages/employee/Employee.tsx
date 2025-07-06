@@ -226,19 +226,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     setIsEditModalOpen(true);
   };
 
-  // const handleSaveEmployee = async (employee: EmployeeResponse) => {
-  //   try {
-  //     if (selectedEmployeeForAdd) {
-  //         setIsAddModalOpen(false);
-  //         setSelectedEmployeeForAdd(undefined);
-  //         console.log(`Created new employee:`, employee);
-  //     }
-  //     await fetchEmployees();
-  //   } catch (error) {
-  //     console.error('Failed to save employee:', error);
-  //   }
-  // };
-
   const handleSaveEmployee = async (newEmployee: EmployeeResponse) => {
   try {
     setIsAddModalOpen(false);
@@ -251,21 +238,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
     console.error('Failed to save employee:', error);
   }
 };
-
-  
-  // const handleEditEmployee = async (employee: EmployeeResponse) => {
-  //   try {
-  //     if (selectedEmployeeForEdit) {
-  //       await employeeService.updateEmployee(selectedEmployeeForEdit._id, employee);
-  //       setIsEditModalOpen(false);
-  //       setSelectedEmployeeForEdit(undefined);
-  //       console.log(`Updated employee ID: ${selectedEmployeeForEdit._id}`);
-  //     }
-  //     await fetchEmployees();
-  //   } catch (error) {
-  //     console.error('Failed to edit employee:', error);
-  //   }
-  // }
 
   const handleEditEmployee = async (employee: EmployeeResponse) => {
   try {
@@ -472,7 +444,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
               <thead>
                 <tr className="text-left text-gray-600 border-b border-gray-200 bg-gray-50">
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.fullNameColumn}</th>
-                  <th className="py -3 px-4 font-semibold">{employeePageTranslations.employeeIdColumn}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.phoneNumberColumn}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.address}</th>
                   <th className="py-3 px-4 font-semibold">{employeePageTranslations.roleColumn}</th>
@@ -485,7 +456,6 @@ const Employee = ({ currentPath, searchQuery = "" }: EmployeeProps) => {
                 {currentEmployeesSorted.map(emp => (
                   <tr key={emp._id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium text-gray-900">{emp.name}</td>
-                    <td className="py-3 px-4 text-gray-700">{emp._id}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.phoneNumber}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.address}</td>
                     <td className="py-3 px-4 text-gray-700">{emp.position}</td>

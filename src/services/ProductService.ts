@@ -1,5 +1,5 @@
 import { ProductCreateDto } from "@/dtos/product/ProductCreateDto";
-import { ProductDto } from "@/dtos/product/productDto";
+import { ProductDto } from "@/dtos/product/ProductDto";
 import { ProductUpdateDto } from "@/dtos/product/ProductUpdateDto";
 import { get } from "http";
 

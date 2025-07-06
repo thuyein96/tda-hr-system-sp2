@@ -1,4 +1,3 @@
-// useEmployeeForm.ts
 import { useState, useEffect } from 'react';
 import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 
@@ -15,7 +14,7 @@ export const useEmployeeForm = (employeeToEdit?: EmployeeResponse) => {
       setFullName(employeeToEdit.name);
       setPhoneNumber(employeeToEdit.phoneNumber);
       setRole(employeeToEdit.position);
-      setJoinDate(employeeToEdit.joinedDate ? employeeToEdit.joinedDate.slice(0, 10) : '');
+      setJoinDate(employeeToEdit.joinedDate);
       setAddress(employeeToEdit.address);
       setStatus(employeeToEdit.status);
     } else {
