@@ -64,10 +64,10 @@ interface WorkLogPageTranslations {
   fullNameColumn: string;
   employeeIdColumn: string;
   dateColumn: string;
-  productRateColumn: string;
+  productNameColumn: string; // Added missing property
   quantityColumn: string;
   roleColumn: string;
-  statusColumn: string; // Changed from salaryColumn
+  totalPriceColumn: string; // Changed from salaryColumn
   noteColumn: string;
   actionColumn: string;
   showing: string;
@@ -324,10 +324,10 @@ const allAppTranslations: AllTranslationsCollection = {
       fullNameColumn: "Full Name",
       employeeIdColumn: "Employee ID",
       dateColumn: "Date",
-      productRateColumn: "Product Rate",
+      productNameColumn: "Product Name",
       quantityColumn: "Quantity",
       roleColumn: "Role",
-      statusColumn: "Status",
+      totalPriceColumn: "Total Price",
       noteColumn: "Note",
       actionColumn: "Action",
       showing: "Showing",
@@ -544,10 +544,10 @@ const allAppTranslations: AllTranslationsCollection = {
       fullNameColumn: "အမည်အပြည့်အစုံ",
       employeeIdColumn: "ဝန်ထမ်း ID",
       dateColumn: "နေ့စွဲ",
-      productRateColumn: "ထုတ်ကုန်နှုန်း",
+      productNameColumn: "ထုတ်ကုန်အမည်",
       quantityColumn: "ပမာဏ",
       roleColumn: "ရာထူး",
-      statusColumn: "အခြေအနေ",
+      totalPriceColumn: "စုစုပေါင်းဈေးနှုန်း",
       noteColumn: "မှတ်စု",
       actionColumn: "လုပ်ဆောင်ချက်",
       showing: "ပြသနေသည်",

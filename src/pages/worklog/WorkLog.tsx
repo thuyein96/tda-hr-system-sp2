@@ -525,21 +525,21 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
         const updatedWorkLogs = initialWorkLogData.map(log => {
           const worklogList: worklogData[] = [];
           for (const worklog of initialWorkLogData) {
-            const employee = employeeData.find(emp => emp._id === log.employeeId);
-            const product = productData.find(prod => prod._id === log.productId);
+            const employee = employeeData.find(emp => emp._id === worklog.employeeId);
+            const product = productData.find(prod => prod._id === worklog.productId);
             
-            const worklog : worklogData = {
-              _id: log._id,
-              employeeId: log.employeeId,
-              productId: log.productId,
+            const worklogItem : worklogData = {
+              _id: worklog._id,
+              employeeId: worklog.employeeId,
+              productId: worklog.productId,
               fullname: employee ? employee.name : '',
               position: employee ? employee.position : '',
               productName: product ? product.name : '',
-              quantity: log.quantity ? log.quantity : 0,
-              totalPrice: log.totalPrice ? log.totalPrice : 0,
+              quantity: worklog.quantity ? worklog.quantity : 0,
+              totalPrice: worklog.totalPrice ? worklog.totalPrice : 0,
               updatedAt: log.updatedAt,
             };
-            worklogList.push(worklog);
+            worklogList.push(worklogItem);
           }
           setWorkLogs(worklogList);
         });
@@ -691,12 +691,11 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
               <thead>
                 <tr className="text-left text-gray-600 border-b border-gray-200 bg-gray-50">
                   <th className="py-3 px-4 font-semibold">{workLogPageTranslations.fullNameColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.dateColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.productRateColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.quantityColumn}</th>
                   <th className="py-3 px-4 font-semibold">{workLogPageTranslations.roleColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.statusColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.noteColumn}</th>
+                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.productNameColumn}</th>
+                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.quantityColumn}</th>
+                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.totalPriceColumn}</th>
+                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.dateColumn}</th>
                   <th className="py-3 px-4 font-semibold text-center">{workLogPageTranslations.actionColumn}</th>
                 </tr>
               </thead>
@@ -708,6 +707,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
                     <td className="py-3 px-4 text-gray-700">{log.productName}</td>
                     <td className="py-3 px-4 text-gray-700">{log.quantity}</td>
                     <td className="py-3 px-4 text-gray-700">{log.totalPrice}</td>
+                    <td className="py-3 px-4 text-gray-700">{new Date(log.updatedAt).toLocaleDateString()}</td>
                     {/* NEW: Dropdown for Status in each table row */}
                     <td className="py-3 px-4 text-left">
                       {/*  */}
