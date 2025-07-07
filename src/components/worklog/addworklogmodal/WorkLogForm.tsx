@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 
-export function WorkLogForm({ formData, setters, employees, translations }) {
+export function WorkLogForm({ formData, setters, employees, products, translations }) {
   const t = translations.workLogPage;
 
   return (
@@ -18,37 +18,12 @@ export function WorkLogForm({ formData, setters, employees, translations }) {
             <option value="" disabled>{t.selectEmployee}</option>
             {employees.map(emp => (
               <option key={emp._id} value={emp._id}>
-                {emp.name} ({emp.position})
+                {emp.name}
               </option>
             ))}
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
         </div>
-      </div>
-
-      {/* Product Rate */}
-      <div>
-        <label className="block text-sm font-medium">{t.productRateColumn}</label>
-        <input
-          type="number"
-          value={formData.productRate}
-          onChange={e => setters.setProductRate(e.target.value)}
-          className="w-full px-4 py-3 border rounded-lg"
-          step="0.01"
-          required
-        />
-      </div>
-
-      {/* Quantity */}
-      <div>
-        <label className="block text-sm font-medium">{t.quantityColumn}</label>
-        <input
-          type="number"
-          value={formData.quantity}
-          onChange={e => setters.setQuantity(e.target.value)}
-          className="w-full px-4 py-3 border rounded-lg"
-          required
-        />
       </div>
 
       {/* Role */}
@@ -63,8 +38,42 @@ export function WorkLogForm({ formData, setters, employees, translations }) {
         />
       </div>
 
-      {/* Date */}
+      {/* Product Name */}
       <div>
+        <label className="block text-sm font-medium">{t.productNameColumn}</label>
+        <div className="relative">
+          <select
+            id="product"
+            value={formData.selectProductId}
+            onChange={e => setters.handleProductSelect(e.target.value)}
+            className="w-full px-4 py-3 border rounded-lg appearance-none"
+            required
+          >
+            <option value="" disabled>{t.selectProduct}</option>
+            {products.map(prod => (
+              <option key={prod._id} value={prod._id}>
+                {prod.name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Quantity */}
+      <div>
+        <label className="block text-sm font-medium">{t.quantityColumn}</label>
+        <input
+          type="number"
+          value={formData.quantity}
+          onChange={e => setters.setQuantity(e.target.value)}
+          className="w-full px-4 py-3 border rounded-lg"
+          required
+        />
+      </div>
+
+      {/* Date */}
+      {/* <div>
         <label className="block text-sm font-medium">{t.dateColumn}</label>
         <input
           type="date"
@@ -73,31 +82,7 @@ export function WorkLogForm({ formData, setters, employees, translations }) {
           className="w-full px-4 py-3 border rounded-lg"
           required
         />
-      </div>
-
-      {/* Status */}
-      <div>
-        <label className="block text-sm font-medium">{t.statusColumn}</label>
-        <select
-          value={formData.status}
-          onChange={e => setters.setStatus(e.target.value as any)}
-          className="w-full px-4 py-3 border rounded-lg"
-        >
-          <option value="On Going">{t.statusOnGoing}</option>
-          <option value="Completed">{t.statusCompleted}</option>
-          <option value="Rejected">{t.statusRejected}</option>
-        </select>
-      </div>
-
-      {/* Note */}
-      <div>
-        <label className="block text-sm font-medium">{t.noteColumn} ({t.optional})</label>
-        <textarea
-          value={formData.note}
-          onChange={e => setters.setNote(e.target.value)}
-          className="w-full px-4 py-3 border rounded-lg min-h-[80px]"
-        />
-      </div>
+      </div> */}
     </>
   );
 }

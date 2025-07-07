@@ -3,8 +3,11 @@ import { X } from 'lucide-react';
 import { useWorkLogForm } from './useWorkLogForm';
 import { WorkLogForm } from './WorkLogForm';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { worklogService } from '@/services/worklogService';
+import { worklogCreateDto } from '@/dtos/worklog/worklogCreateDto';
+import { toast  } from 'react-hot-toast';
 
-export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employees }) => {
+export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employees, products }) => {
   const modalRef = useRef(null);
   const { translations } = useLanguage();
   const t = translations.workLogPage;
@@ -13,8 +16,8 @@ export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employ
     isEditing,
     formData,
     setters,
-    buildWorkLogData
-  } = useWorkLogForm(workLogToEdit, employees);
+    calculateTotalPrice
+  } = useWorkLogForm(workLogToEdit, employees, products);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -33,11 +36,35 @@ export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employ
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.selectedEmployeeId || !formData.fullName) {
-      alert("Please select an employee.");
+      toast.error("Please select an employee.");
       return;
     }
-    const data = buildWorkLogData();
-    onSave(data, isEditing);
+    if (!formData.selectProductId || !formData.productName) {
+      toast.error("Please select a product.");
+      return;
+    }
+
+    const quantity = Number(formData.quantity);
+    if (isNaN(quantity) || quantity <= 0) {
+      toast.error("Please enter a valid quantity (must be a positive number).");
+      return;
+    }
+
+    const data: worklogCreateDto = {
+      employeeId: formData.selectedEmployeeId,
+      productId: formData.selectProductId,
+      quantity: quantity,
+    }
+    // if (formData.quantity) {
+    //   data.totalPrice = calculateTotalPrice(formData.selectProductId, formData.quantity);
+    // }
+    const response = worklogService.createWorkLog(data);
+
+    if(response)
+    {
+      toast.success("Work log saved successfully!");
+    }
+    onSave(response, isEditing);
     onClose();
   };
 
@@ -62,6 +89,7 @@ export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employ
             formData={formData}
             setters={setters}
             employees={employees}
+            products={products}
             translations={translations}
           />
 

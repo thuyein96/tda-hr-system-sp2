@@ -11,6 +11,7 @@ import { worklogDto } from '@/dtos/worklog/worklogDto';
 import { worklogData } from '@/dtos/worklog/worklogData';
 import { AddWorkLogModal } from '@/components/worklog/addworklogmodal/AddWorkLogModal';
 import { ProductDto } from '@/dtos/product/ProductDto';
+import { worklogCreateDto } from '@/dtos/worklog/worklogCreateDto';
 
 // --- DTOs ---
 // Employee Response DTO (if coming from a backend)
@@ -493,7 +494,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [workLogToDeleteDetails, setWorkLogToDeleteDetails] = useState<{ id: string } | null>(null);
   const [selectedWorkLogForEdit, setSelectedWorkLogForEdit] = useState<worklogDto | undefined>(undefined);
-
+  const [selectedWorkLogForAdd, setSelectedWorkLogForAdd] = useState<worklogCreateDto | undefined>(undefined)
   const [initialWorkLogData, setInitialWorkLogData] = useState<worklogDto[]>([]);
   const [workLogs, setWorkLogs] = useState<worklogData[]>([]);
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
@@ -605,9 +606,9 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
     setIsAddModalOpen(true);
   };
 
-  const handleSaveWorkLog = (workLog: worklogData) => {
-    const workLogDto: worklogDto = mapWorklogToDto(workLog);
-    setInitialWorkLogData(prevLogs => prevLogs.map(log => log._id === workLog._id ? workLogDto : log));
+    const handleSaveWorkLog = (workLog: worklogData) => {
+    const workLogDto: worklogCreateDto = mapWorklogToDto(workLog);
+    setSelectedWorkLogForAdd(workLogDto);
   };
 
   const handleConfirmDeleteClick = (workLog: worklogData) => {
@@ -709,9 +710,9 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
                     <td className="py-3 px-4 text-gray-700">{log.totalPrice}</td>
                     <td className="py-3 px-4 text-gray-700">{new Date(log.updatedAt).toLocaleDateString()}</td>
                     {/* NEW: Dropdown for Status in each table row */}
-                    <td className="py-3 px-4 text-left">
-                      {/*  */}
-                    </td>
+                    {/* <td className="py-3 px-4 text-left">
+                      
+                    </td> */}
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
@@ -779,6 +780,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
         workLogToEdit={selectedWorkLogForEdit}
         onSave={handleSaveWorkLog}
         employees={employees}
+        products={products}
       />
 
       {/* Delete Confirmation Modal */}
