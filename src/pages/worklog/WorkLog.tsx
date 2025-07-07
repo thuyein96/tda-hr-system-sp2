@@ -12,6 +12,7 @@ import { worklogData } from '@/dtos/worklog/worklogData';
 import { AddWorkLogModal } from '@/components/worklog/addworklogmodal/AddWorkLogModal';
 import { ProductDto } from '@/dtos/product/ProductDto';
 import { worklogCreateDto } from '@/dtos/worklog/worklogCreateDto';
+import { worklogUpdateDto } from '@/dtos/worklog/worklogUpdateDto';
 
 // --- DTOs ---
 // Employee Response DTO (if coming from a backend)
@@ -493,7 +494,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [workLogToDeleteDetails, setWorkLogToDeleteDetails] = useState<{ id: string } | null>(null);
-  const [selectedWorkLogForEdit, setSelectedWorkLogForEdit] = useState<worklogDto | undefined>(undefined);
+  const [selectedWorkLogForEdit, setSelectedWorkLogForEdit] = useState<worklogUpdateDto | undefined>(undefined);
   const [selectedWorkLogForAdd, setSelectedWorkLogForAdd] = useState<worklogCreateDto | undefined>(undefined)
   const [initialWorkLogData, setInitialWorkLogData] = useState<worklogDto[]>([]);
   const [workLogs, setWorkLogs] = useState<worklogData[]>([]);
@@ -508,9 +509,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
-  // Fetch employees on component mount
-  useEffect(() => {
-    const fetchAllData = async () => {
+  const fetchAllData = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -538,7 +537,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
               productName: product ? product.name : '',
               quantity: worklog.quantity ? worklog.quantity : 0,
               totalPrice: worklog.totalPrice ? worklog.totalPrice : 0,
-              updatedAt: log.updatedAt,
+              updatedAt: log.updatedAt, // Format date to YYYY-MM-DD
             };
             worklogList.push(worklogItem);
           }
@@ -552,7 +551,8 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
         setLoading(false);
       }
     };
-
+  // Fetch employees on component mount
+  useEffect(() => {
     fetchAllData();
   }, []);
 
@@ -589,25 +589,32 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
     setIsAddModalOpen(true);
   };
 
-  function mapWorklogToDto(workLog: worklogData): worklogDto {
+  function mapWorklogUpdateToDto(workLog: worklogData): worklogUpdateDto {
     return {
       _id: workLog._id,
       employeeId: workLog.employeeId,
       productId: workLog.productId,
       quantity: workLog.quantity,
       totalPrice: workLog.totalPrice,
-      updatedAt: workLog.updatedAt,
+    };
+  }
+
+  function mapWorklogCreateToDto(workLog: worklogData): worklogCreateDto {
+    return {
+      employeeId: workLog.employeeId,
+      productId: workLog.productId,
+      quantity: workLog.quantity,
     };
   }
 
   const handleOpenEditModal = (workLog: worklogData) => {
-    const workLogDto: worklogDto = mapWorklogToDto(workLog);
+    const workLogDto: worklogUpdateDto = mapWorklogUpdateToDto(workLog);
     setSelectedWorkLogForEdit(workLogDto);
     setIsAddModalOpen(true);
   };
 
     const handleSaveWorkLog = (workLog: worklogData) => {
-    const workLogDto: worklogCreateDto = mapWorklogToDto(workLog);
+    const workLogDto: worklogCreateDto = mapWorklogCreateToDto(workLog);
     setSelectedWorkLogForAdd(workLogDto);
   };
 
