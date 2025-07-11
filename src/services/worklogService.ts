@@ -76,12 +76,13 @@ export const worklogService = {
       }
     },
   
-    updateEmployee: async (id: string, worklog: Partial<worklogDto>): Promise<worklogDto> => {
+    updateWorkLog: async (id: string, worklog: Partial<worklogDto>): Promise<worklogDto> => {
       try {
           if (!id) {
             throw new Error('No worklog ID provided for update');
           }
-  
+          console.log("Updating worklog with ID:", id, "and data:", worklog);
+          console.log("token", localStorage.getItem('token'));
         const response = await fetch(`${API_BASE_URL}/employee-product/${id}`, {
           method: 'PATCH', 
           headers: {
@@ -106,7 +107,7 @@ export const worklogService = {
     },
   
   
-    deleteWorklog: async (id: string): Promise<void> => {
+    deleteWorkLog: async (id: string): Promise<void> => {
       try {
         if (!id) {
           throw new Error('No worklog ID provided for deletion');

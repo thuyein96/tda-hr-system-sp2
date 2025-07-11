@@ -7,7 +7,7 @@ interface SidebarItem {
   icon: string;
 }
 
-interface EmployeePageTranslations {
+export interface EmployeePageTranslations {
   totalEmployee: string;
   active: string;
   onLeave: string;

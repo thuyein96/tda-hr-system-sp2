@@ -13,17 +13,11 @@ import { AddWorkLogModal } from '@/components/worklog/addworklogmodal/AddWorkLog
 import { ProductDto } from '@/dtos/product/ProductDto';
 import { worklogCreateDto } from '@/dtos/worklog/worklogCreateDto';
 import { worklogUpdateDto } from '@/dtos/worklog/worklogUpdateDto';
+import EditWorkLogModal from '@/components/worklog/editworklogmodal/EditWorklogModal';
+import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
 
 // --- DTOs ---
 // Employee Response DTO (if coming from a backend)
-export interface EmployeeResponse {
-  _id: string;
-  name: string;
-  phoneNumber: string;
-  address: string;
-  position: string;
-  joinedDate: string;
-}
 
 // Employee DTO for creating/updating (typically without _id)
 export interface EmployeeDto {
@@ -36,40 +30,7 @@ export interface EmployeeDto {
 
 // --- Mock Employee Service (for demonstration purposes) ---
 // In a real application, this would be a separate service file making API calls.
-const mockEmployees: EmployeeResponse[] = [
-  {
-    _id: '6674e2d3122c6c31f4e0c4b2',
-    name: 'Kyaw',
-    phoneNumber: '09123456789',
-    address: 'Yangon',
-    position: 'Plastic Producer',
-    joinedDate: '2023-01-15'
-  },
-  {
-    _id: '6674e2d3122c6c31f4e0c4b3',
-    name: 'Aung Aung',
-    phoneNumber: '09876543210',
-    address: 'Mandalay',
-    position: 'Packaging',
-    joinedDate: '2022-11-01'
-  },
-  {
-    _id: '6674e2d3122c6c31f4e0c4b4',
-    name: 'Su Su',
-    phoneNumber: '09112233445',
-    address: 'Naypyidaw',
-    position: 'Quality Control',
-    joinedDate: '2024-03-20'
-  },
-  {
-    _id: '6674e2d3122c6c31f4e0c4b5',
-    name: 'Mya Mya',
-    phoneNumber: '09556677889',
-    address: 'Taunggyi',
-    position: 'Bottle Producer',
-    joinedDate: '2023-09-10'
-  },
-];
+const mockEmployees: EmployeeResponse[] = []
 
 const mockEmployeeService = {
   getAllEmployees: async (): Promise<EmployeeResponse[]> => {
@@ -562,9 +523,9 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
       log.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.quantity.toString().includes(searchQuery) ||
-      log.totalPrice.toString().includes(searchQuery) ||
-      log.updatedAt.toString().includes(searchQuery.toLowerCase());
+      log.quantity.toString().includes(searchQuery);
+      // log.totalPrice.toString().includes(searchQuery) ||
+      // log.updatedAt.toString().includes(searchQuery.toLowerCase());
     return matchesSearchQuery;
   });
 
@@ -594,8 +555,8 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
       _id: workLog._id,
       employeeId: workLog.employeeId,
       productId: workLog.productId,
-      quantity: workLog.quantity,
-      totalPrice: workLog.totalPrice,
+      quantity: workLog.quantity
+      // totalPrice: workLog.totalPrice,
     };
   }
 
@@ -625,7 +586,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
 
   const handleExecuteDelete = (id: string) => {
     setInitialWorkLogData(prevLogs => prevLogs.filter(log => log._id !== id));
-    worklogService.deleteWorklog(id);
+    worklogService.deleteWorkLog(id);
   };
 
   if (loading) return <div className="text-center py-8">{translations.common.loading}...</div>;
@@ -778,10 +739,21 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
             </div>
           </div>
         </div>
+        
       </div>
 
-      {/* Add/Edit Work Log Modal */}
-      <AddWorkLogModal
+      {/* Add Work Log Modal */}
+      {/* <AddWorkLogModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        workLogToEdit={selectedWorkLogForEdit}
+        onSave={handleSaveWorkLog}
+        employees={employees}
+        products={products}
+      /> */}
+
+      <EditWorkLogModal
+        worklogid={selectedWorkLogForEdit?._id}
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         workLogToEdit={selectedWorkLogForEdit}
