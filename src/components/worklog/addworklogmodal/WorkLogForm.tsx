@@ -27,7 +27,7 @@ export function WorkLogForm({ formData, setters, employees, products, translatio
       </div>
 
       {/* Role */}
-      <div>
+      {/* <div>
         <label className="block text-sm font-medium">{t.roleColumn}</label>
         <input
           type="text"
@@ -36,7 +36,7 @@ export function WorkLogForm({ formData, setters, employees, products, translatio
           className="w-full px-4 py-3 border rounded-lg"
           required
         />
-      </div>
+      </div> */}
 
       {/* Product Name */}
       <div>
@@ -63,13 +63,13 @@ export function WorkLogForm({ formData, setters, employees, products, translatio
       {/* Quantity */}
       <div>
         <label className="block text-sm font-medium">{t.quantityColumn}</label>
-        <input
-          type="number"
-          value={formData.quantity}
-          onChange={e => setters.setQuantity(e.target.value)}
-          className="w-full px-4 py-3 border rounded-lg"
-          required
-        />
+          <input
+            type="number"
+            value={formData.quantity ?? ''}   // fallback to empty string if undefined
+            onChange={e => setters.setQuantity(Number(e.target.value))}
+            className="w-full px-4 py-3 border rounded-lg"
+            required
+          />              
       </div>
 
       {/* Date */}
