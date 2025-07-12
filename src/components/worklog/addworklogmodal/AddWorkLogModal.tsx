@@ -5,9 +5,19 @@ import { WorkLogForm } from './WorkLogForm';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { worklogService } from '@/services/worklogService';
 import { worklogCreateDto } from '@/dtos/worklog/worklogCreateDto';
-import { toast  } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+import { worklogData } from '@/dtos/worklog/worklogData';
 
-export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employees, products }) => {
+interface AddWorkLogModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  workLogToEdit?: worklogData;
+  onSave: (workLog: any) => void;
+  employees: any[];
+  products: any[];
+}
+
+export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employees, products }: AddWorkLogModalProps) => {
   const modalRef = useRef(null);
   const { translations } = useLanguage();
   const t = translations.workLogPage;
@@ -16,7 +26,6 @@ export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employ
     isEditing,
     formData,
     setters,
-    calculateTotalPrice
   } = useWorkLogForm(workLogToEdit, employees, products);
 
   useEffect(() => {
@@ -33,13 +42,14 @@ export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employ
     };
   }, [isOpen, onClose]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.selectedEmployeeId || !formData.fullName) {
+    
+    if (!formData.selectedEmployeeId) {
       toast.error("Please select an employee.");
       return;
     }
-    if (!formData.selectProductId || !formData.productName) {
+    if (!formData.selectProductId) {
       toast.error("Please select a product.");
       return;
     }
@@ -50,22 +60,36 @@ export const AddWorkLogModal = ({ isOpen, onClose, workLogToEdit, onSave, employ
       return;
     }
 
-    const data: worklogCreateDto = {
-      employeeId: formData.selectedEmployeeId,
-      productId: formData.selectProductId,
-      quantity: quantity,
+    try {
+      if (isEditing && workLogToEdit) {
+        // Update existing worklog
+        const updateData: Partial<worklogCreateDto> = {
+          employeeId: formData.selectedEmployeeId,
+          productId: formData.selectProductId,
+          quantity: quantity,
+        };
+        
+        const response = await worklogService.updateWorklog(workLogToEdit._id, updateData);
+        onSave(response);
+        toast.success("Work log updated successfully!");
+      } else {
+        // Create new worklog
+        const data: worklogCreateDto = {
+          employeeId: formData.selectedEmployeeId,
+          productId: formData.selectProductId,
+          quantity: quantity,
+        };
+        
+        const response = await worklogService.createWorkLog(data);
+        onSave(response);
+        toast.success("Work log created successfully!");
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error('Error saving work log:', error);
+      toast.error("Failed to save work log. Please try again.");
     }
-    // if (formData.quantity) {
-    //   data.totalPrice = calculateTotalPrice(formData.selectProductId, formData.quantity);
-    // }
-    const response = worklogService.createWorkLog(data);
-
-    if(response)
-    {
-      toast.success("Work log saved successfully!");
-    }
-    onSave(response, isEditing);
-    onClose();
   };
 
   if (!isOpen) return null;

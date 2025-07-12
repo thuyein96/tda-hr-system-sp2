@@ -27,7 +27,7 @@ export function WorkLogForm({ formData, setters, employees, products, translatio
       </div>
 
       {/* Role */}
-      <div>
+      {/* <div>
         <label className="block text-sm font-medium">{t.roleColumn}</label>
         <input
           type="text"
@@ -36,7 +36,7 @@ export function WorkLogForm({ formData, setters, employees, products, translatio
           className="w-full px-4 py-3 border rounded-lg"
           required
         />
-      </div>
+      </div> */}
 
       {/* Product Name */}
       <div>
