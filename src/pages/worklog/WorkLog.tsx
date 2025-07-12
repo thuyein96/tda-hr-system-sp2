@@ -307,8 +307,6 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
                   <th className="py-3 px-4 font-semibold">{workLogPageTranslations.roleColumn}</th>
                   <th className="py-3 px-4 font-semibold">{workLogPageTranslations.productNameColumn}</th>
                   <th className="py-3 px-4 font-semibold">{workLogPageTranslations.quantityColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.totalPriceColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{workLogPageTranslations.dateColumn}</th>
                   <th className="py-3 px-4 font-semibold text-center">{workLogPageTranslations.actionColumn}</th>
                 </tr>
               </thead>
