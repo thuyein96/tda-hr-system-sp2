@@ -455,7 +455,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [workLogToDeleteDetails, setWorkLogToDeleteDetails] = useState<{ id: string } | null>(null);
-  const [selectedWorkLogForEdit, setSelectedWorkLogForEdit] = useState<worklogUpdateDto | undefined>(undefined);
+  const [selectedWorkLogForEdit, setSelectedWorkLogForEdit] = useState<worklogDto | undefined>(undefined);
   const [selectedWorkLogForAdd, setSelectedWorkLogForAdd] = useState<worklogCreateDto | undefined>(undefined)
   const [initialWorkLogData, setInitialWorkLogData] = useState<worklogDto[]>([]);
   const [workLogs, setWorkLogs] = useState<worklogData[]>([]);
@@ -496,9 +496,9 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
               fullname: employee ? employee.name : '',
               position: employee ? employee.position : '',
               productName: product ? product.name : '',
-              quantity: worklog.quantity ? worklog.quantity : 0,
-              totalPrice: worklog.totalPrice ? worklog.totalPrice : 0,
-              updatedAt: log.updatedAt, // Format date to YYYY-MM-DD
+              quantity: worklog.quantity ? worklog.quantity : 0
+              // totalPrice: worklog.totalPrice ? worklog.totalPrice : 0,
+              // updatedAt: log.updatedAt, // Format date to YYYY-MM-DD
             };
             worklogList.push(worklogItem);
           }
@@ -552,7 +552,6 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
 
   function mapWorklogUpdateToDto(workLog: worklogData): worklogUpdateDto {
     return {
-      _id: workLog._id,
       employeeId: workLog.employeeId,
       productId: workLog.productId,
       quantity: workLog.quantity
@@ -569,8 +568,7 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
   }
 
   const handleOpenEditModal = (workLog: worklogData) => {
-    const workLogDto: worklogUpdateDto = mapWorklogUpdateToDto(workLog);
-    setSelectedWorkLogForEdit(workLogDto);
+    setSelectedWorkLogForEdit(workLog);
     setIsAddModalOpen(true);
   };
 
@@ -675,8 +673,8 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
                     <td className="py-3 px-4 text-gray-700">{log.position}</td>
                     <td className="py-3 px-4 text-gray-700">{log.productName}</td>
                     <td className="py-3 px-4 text-gray-700">{log.quantity}</td>
-                    <td className="py-3 px-4 text-gray-700">{log.totalPrice}</td>
-                    <td className="py-3 px-4 text-gray-700">{new Date(log.updatedAt).toLocaleDateString()}</td>
+                    {/* <td className="py-3 px-4 text-gray-700">{log.totalPrice}</td>
+                    <td className="py-3 px-4 text-gray-700">{new Date(log.updatedAt).toLocaleDateString()}</td> */}
                     {/* NEW: Dropdown for Status in each table row */}
                     {/* <td className="py-3 px-4 text-left">
                       
@@ -743,14 +741,14 @@ const WorkLog = ({ currentPath }: WorkLogProps) => {
       </div>
 
       {/* Add Work Log Modal */}
-      {/* <AddWorkLogModal
+      <AddWorkLogModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         workLogToEdit={selectedWorkLogForEdit}
         onSave={handleSaveWorkLog}
         employees={employees}
         products={products}
-      /> */}
+      />
 
       <EditWorkLogModal
         worklogid={selectedWorkLogForEdit?._id}
