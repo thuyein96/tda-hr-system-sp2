@@ -54,6 +54,7 @@ interface EmployeePageTranslations {
 
 // UPDATED: Define specific types for Work Log page translation structure
 interface WorkLogPageTranslations {
+  [x: string]: string;
   totalWorkLogs: string;
   totalCompletedWorklogs: string;
   totalQuantityProduced: string;
