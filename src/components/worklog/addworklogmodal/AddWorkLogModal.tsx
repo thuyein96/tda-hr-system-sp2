@@ -75,7 +75,7 @@ export const AddWorkLogModal = ({
           quantity,
         };
 
-        const response = await worklogService.updateWorklog(workLogToEdit._id, updateData);
+        const response = await worklogService.updateWorkLog(workLogToEdit._id, updateData);
         onSave(response);
         toast.success(t.updateSuccess || "Work log updated successfully!");
       } else {

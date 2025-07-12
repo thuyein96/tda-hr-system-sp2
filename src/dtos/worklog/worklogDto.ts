@@ -3,6 +3,6 @@ export interface worklogDto {
     employeeId: string;
     productId: string;
     quantity: number;
-    // totalPrice: number;
-    // updatedAt: Date;
+    totalPrice: number;
+    updatedAt: Date;
 }

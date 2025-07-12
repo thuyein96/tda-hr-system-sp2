@@ -6,7 +6,7 @@ export interface worklogData {
     position: string;
     productName: string;
     quantity: number;
-    // totalPrice: number;
-    // updatedAt: Date;
+    totalPrice: number;
+    updatedAt: Date;
 }
     
