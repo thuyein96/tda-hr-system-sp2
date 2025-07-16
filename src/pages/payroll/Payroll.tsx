@@ -1,29 +1,11 @@
-// src/pages/Payroll.tsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { DollarSign, FileText, Plus, ChevronDown, Edit, X, ChevronLeft, ChevronRight, Calculator, Minus } from 'lucide-react';
-import { useLanguage } from '../../contexts/LanguageContext'; // Adjust path as necessary
-import { useSearchParams } from 'react-router-dom'; // For global search
-// Define missing types here since './WorkLog' does not exist
-export interface EmployeeResponse {
-  _id: string;
-  name: string;
-  phoneNumber: string;
-  address: string;
-  position: string;
-  joinedDate: string;
-}
-
-export interface WorkLogData {
-  _id: string;
-  employeeId: string;
-  fullName: string;
-  productRate: number;
-  quantity: number;
-  role: string;
-  date: string; // YYYY-MM-DD
-  status: string;
-  note: string;
-}
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useSearchParams } from 'react-router-dom';
+import { PayrollDto } from '@/dtos/payroll/PayrollDto';
+import { EmployeeResponse } from '@/dtos/employee/EmployeeResponse';
+import { payrollService } from '@/services/payrollService';
+import { employeeService } from '@/services/employeeService';
 
 // --- Date Utility Functions ---
 const formatDate = (date: Date): string => {
@@ -35,14 +17,13 @@ const formatDate = (date: Date): string => {
 
 const parseDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split('-').map(Number);
-  // Ensure the date is treated as UTC to avoid timezone issues affecting day calculations
   return new Date(Date.UTC(year, month - 1, day));
 };
 
 const getStartOfWeek = (date: Date): Date => {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const day = d.getUTCDay(); // Sunday - 0, Monday - 1, ..., Saturday - 6
-  const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday (1)
+  const day = d.getUTCDay();
+  const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1);
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), diff));
 };
 
@@ -57,98 +38,28 @@ const getStartOfMonth = (date: Date): Date => {
 };
 
 const getEndOfMonth = (date: Date): Date => {
-  return new Date(Date.UTC(date.getFullYear(), date.getMonth() + 1, 0)); // Day 0 of next month is last day of current month
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth() + 1, 0));
 };
 
 const isDateInRange = (dateString: string, startDate: string, endDate: string): boolean => {
   const date = parseDate(dateString);
   const start = parseDate(startDate);
   const end = parseDate(endDate);
-  // Compare timestamps
   return date.getTime() >= start.getTime() && date.getTime() <= end.getTime();
 };
 
-// --- Mock Data Services ---
-// (Assume these would be replaced by actual API calls)
-// Mock Worklog Service - Only providing completed worklogs for payroll calculation
-const mockWorklogService = {
-  getCompletedWorklogs: async (): Promise<WorkLogData[]> => {
-    const initialWorkLogData: WorkLogData[] = [
-      {
-        _id: 'wl-001', employeeId: '6674e2d3122c6c31f4e0c4b2', fullName: 'Kyaw',
-        productRate: 2.5, quantity: 1000, role: 'Plastic Producer', date: '2025-04-29',
-        status: 'Completed', note: '20 quantity errored.'
-      },
-      {
-        _id: 'wl-004', employeeId: '6674e2d3122c6c31f4e0c4b3', fullName: 'Aung Aung',
-        productRate: 3, quantity: 800, role: 'Packaging', date: '2025-05-03',
-        status: 'Completed', note: ''
-      },
-      {
-        _id: 'wl-005_bonus', employeeId: '6674e2d3122c6c31f4e0c4b4', fullName: 'Su Su',
-        productRate: 5, quantity: 300, role: 'Quality Control', date: '2025-05-04',
-        status: 'Completed', note: 'Bonus included'
-      },
-       {
-        _id: 'wl-006', employeeId: '6674e2d3122c6c31f4e0c4b2', fullName: 'Kyaw',
-        productRate: 2.5, quantity: 500, role: 'Plastic Producer', date: '2025-04-30',
-        status: 'Completed', note: 'Additional quantity'
-      },
-      {
-        _id: 'wl-007', employeeId: '6674e2d3122c6c31f4e0c4b2', fullName: 'Kyaw',
-        productRate: 2.5, quantity: 200, role: 'Plastic Producer', date: '2025-06-21', // Example for current week/day
-        status: 'Completed', note: 'Recent entry.'
-      },
-      {
-        _id: 'wl-008', employeeId: '6674e2d3122c6c31f4e0c4b3', fullName: 'Aung Aung',
-        productRate: 3, quantity: 150, role: 'Packaging', date: '2025-06-20', // Example for current week/day
-        status: 'Completed', note: 'Recent entry.'
-      },
-      {
-        _id: 'wl-009', employeeId: '6674e2d3122c6c31f4e0c4b4', fullName: 'Su Su',
-        productRate: 5, quantity: 50, role: 'Quality Control', date: '2025-06-19', // Example for current week/day
-        status: 'Completed', note: 'Recent entry.'
-      },
-      {
-        _id: 'wl-010', employeeId: '6674e2d3122c6c31f4e0c4b2', fullName: 'Kyaw',
-        productRate: 2.0, quantity: 800, role: 'Plastic Producer', date: '2025-06-22', // Today
-        status: 'Completed', note: 'Today production.'
-      },
-    ];
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(initialWorkLogData.filter(log => log.status === 'Completed'));
-      }, 700); // Simulate network delay
-    });
-  }
-};
-
-const mockEmployeeService = {
-  getAllEmployees: async (): Promise<EmployeeResponse[]> => {
-    const employees: EmployeeResponse[] = [
-      { _id: '6674e2d3122c6c31f4e0c4b2', name: 'Kyaw', phoneNumber: '09123456789', address: 'Yangon', position: 'Plastic Producer', joinedDate: '2023-01-15' },
-      { _id: '6674e2d3122c6c31f4e0c4b3', name: 'Aung Aung', phoneNumber: '09876543210', address: 'Mandalay', position: 'Packaging', joinedDate: '2022-11-01' },
-      { _id: '6674e2d3122c6c31f4e0c4b4', name: 'Su Su', phoneNumber: '09112233445', address: 'Naypyidaw', position: 'Quality Control', joinedDate: '2024-03-20' },
-      { _id: '6674e2d3122c6c31f4e0c4b5', name: 'Mya Mya', phoneNumber: '09556677889', address: 'Taunggyi', position: 'Bottle Producer', joinedDate: '2023-09-10' },
-    ];
-    return new Promise(resolve => {
-      setTimeout(() => resolve(employees), 500);
-    });
-  }
-};
-
-// --- Payroll Data Interface (UPDATED: Added paidStatus) ---
+// --- Enhanced Payroll Entry Interface ---
 interface PayrollEntry {
   id: string;
   employeeId: string;
   fullName: string;
+  position: string;
   totalQuantity: number;
-  totalProductRate: number; // Sum of product rates if multiple tasks, or average
-  calculatedSalary: number; // productRate * quantity for each completed worklog summed up
-  bonusDeduction: number; // Positive for bonus, negative for deduction
+  totalSalary: number;
+  bonusDeduction: number;
   netSalary: number;
-  payrollPeriod: string; // e.g., "2025-06" or "2025-06-01 to 2025-06-30"
-  paidStatus: 'Paid' | 'Unpaid'; // NEW: Paid status
+  period: Date;
+  paidStatus: 'Paid' | 'Unpaid';
 }
 
 // --- Bonus/Deduction Modal Component ---
@@ -300,7 +211,6 @@ const BonusDeductionModal = ({ isOpen, onClose, payrollEntry, onSave }: BonusDed
   );
 };
 
-
 // --- Main Payroll Component ---
 const Payroll = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -311,11 +221,11 @@ const Payroll = () => {
   const [isBonusDeductionModalOpen, setIsBonusDeductionModalOpen] = useState(false);
   const [selectedPayrollEntry, setSelectedPayrollEntry] = useState<PayrollEntry | null>(null);
 
-  // NEW: Period selection states
+  // Period selection states
   const [periodType, setPeriodType] = useState<'month' | 'week' | 'day' | 'custom'>('month');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
-  const [currentDisplayPeriod, setCurrentDisplayPeriod] = useState<string>(''); // For displaying the chosen period
+  const [currentDisplayPeriod, setCurrentDisplayPeriod] = useState<string>('');
 
   const { translations } = useLanguage();
   const payrollPageTranslations = translations.payrollPage;
@@ -323,185 +233,155 @@ const Payroll = () => {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
-  // Function to calculate payroll entries based on filtered worklogs
-  const calculatePayrollEntries = (
-    allWorklogs: WorkLogData[],
-    employees: EmployeeResponse[],
-    filterStart: string,
-    filterEnd: string
-  ): PayrollEntry[] => {
-    const employeeMap = new Map(employees.map(emp => [emp._id, emp.name]));
-
-    const filteredWorklogs = allWorklogs.filter(log =>
-      log.status === 'Completed' && isDateInRange(log.date, filterStart, filterEnd)
-    );
-
-    const groupedWorklogs = filteredWorklogs.reduce((acc, log) => {
-      if (!acc[log.employeeId]) {
-        acc[log.employeeId] = {
-          employeeId: log.employeeId,
-          fullName: employeeMap.get(log.employeeId) || 'Unknown Employee',
-          totalQuantity: 0,
-          totalProductRate: 0,
-          calculatedSalary: 0,
-          bonusDeduction: 0, // Bonuses/deductions are applied to the total entry, not per worklog
-          netSalary: 0,
-          id: '', // Temporary, will be set later
-          payrollPeriod: '', // Temporary, will be set later
-          paidStatus: 'Unpaid', // Initialize as Unpaid
-        };
-      }
-      acc[log.employeeId].totalQuantity += log.quantity;
-      acc[log.employeeId].calculatedSalary += log.productRate * log.quantity;
-      // Simple average product rate for display purposes
-      acc[log.employeeId].totalProductRate = (acc[log.employeeId].calculatedSalary / acc[log.employeeId].totalQuantity) || 0;
-
-      return acc;
-    }, {} as { [key: string]: PayrollEntry });
-
-    // Incorporate existing bonus/deduction and paid status if available (e.g., from local storage or actual backend)
-    // For this mock, we'll reapply previously set bonuses/deductions and paid status to the new entries
-    const existingEntryData = new Map(payrollEntries.map(entry => [entry.employeeId, { bonusDeduction: entry.bonusDeduction, paidStatus: entry.paidStatus }]));
-
-
-    return Object.values(groupedWorklogs).map(entry => {
-      const existingData = existingEntryData.get(entry.employeeId);
-      const existingBOD = existingData?.bonusDeduction || 0;
-      const existingPaidStatus = existingData?.paidStatus || 'Unpaid'; // Default to Unpaid
-
-      return {
-        ...entry,
-        id: `payroll-${entry.employeeId}-${filterStart}-${filterEnd}`, // Unique ID for payroll entry based on period
-        payrollPeriod: `${filterStart} - ${filterEnd}`, // Display the period used for calculation
-        bonusDeduction: existingBOD, // Reapply existing bonus/deduction
-        netSalary: entry.calculatedSalary + existingBOD,
-        paidStatus: existingPaidStatus, // Reapply existing paid status
-      };
-    });
-  };
-
-  // Memoize the full list of all completed worklogs to avoid refetching
-  const allCompletedWorklogs = useRef<WorkLogData[]>([]);
-  const allEmployees = useRef<EmployeeResponse[]>([]); // Store all employees too
-
-  // Initial data fetch for all employees and all completed worklogs
+  // Fetch payroll and employee data
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchPayrollData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const employeeData = await mockEmployeeService.getAllEmployees();
-        const worklogData = await mockWorklogService.getCompletedWorklogs();
-        
-        allCompletedWorklogs.current = worklogData; // Store all completed worklogs
-        allEmployees.current = employeeData; // Store all employees
+        const [payrollData, employeeData] = await Promise.all([
+          payrollService.getAllPayrolls(),
+          employeeService.getAllEmployees()
+        ]);
 
-        // Set default period to current month initially
+        // Create employee map for quick lookup
+        const employeeMap = new Map(employeeData.map(emp => [emp._id, emp]));
+
+        // Transform payroll data to include employee details
+        const transformedPayrollEntries: PayrollEntry[] = payrollData.map(payroll => {
+          const employee = employeeMap.get(payroll.employeeId);
+          
+          return {
+            id: payroll._id,
+            employeeId: payroll.employeeId,
+            fullName: employee ? employee.name : 'Unknown Employee',
+            position: employee ? employee.position : 'Unknown Position',
+            totalQuantity: payroll.totalQuantity,
+            totalSalary: payroll.totalSalary,
+            bonusDeduction: 0, // Initialize as 0, can be modified via modal
+            netSalary: payroll.totalSalary, // Initially same as total salary
+            period: new Date(payroll.period),
+            paidStatus: 'Unpaid' // Initialize as Unpaid
+          };
+        });
+
+        setPayrollEntries(transformedPayrollEntries);
+
+        // Set default period to current month
         const today = new Date();
         const startOfMonth = getStartOfMonth(today);
         const endOfMonth = getEndOfMonth(today);
 
         setCustomStartDate(formatDate(startOfMonth));
         setCustomEndDate(formatDate(endOfMonth));
-        setPeriodType('month'); // Explicitly set default period type
+        setPeriodType('month');
         setCurrentDisplayPeriod(
           `${payrollPageTranslations.currentPeriod} ${startOfMonth.toLocaleString('default', { month: 'long' })} ${startOfMonth.getFullYear()}`
         );
 
-        const initialPayroll = calculatePayrollEntries(
-          worklogData,
-          employeeData,
-          formatDate(startOfMonth),
-          formatDate(endOfMonth)
-        );
-        setPayrollEntries(initialPayroll);
-
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching data');
-        console.error('Failed to fetch initial payroll data:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred while fetching payroll data');
+        console.error('Failed to fetch payroll data:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchInitialData();
-  }, []); // Run only once on component mount
 
-  // Effect to recalculate payroll entries when period changes or apply filter button clicked (implicitly by custom date change)
+    fetchPayrollData();
+  }, [payrollPageTranslations]);
+
+  // Update display period when period type or custom dates change
   useEffect(() => {
-    if (!loading && allCompletedWorklogs.current.length > 0 && allEmployees.current.length > 0) { // Ensure data is loaded
-      let calculatedStartDate: string;
-      let calculatedEndDate: string;
-      const today = new Date(); // Use new Date() to get current date for dynamic periods
+    const today = new Date();
+    let displayPeriodText = '';
+
+    switch (periodType) {
+      case 'day':
+        displayPeriodText = `${payrollPageTranslations.currentPeriod} ${formatDate(today)}`;
+        break;
+      case 'week':
+        const startOfWeek = getStartOfWeek(today);
+        const endOfWeek = getEndOfWeek(today);
+        displayPeriodText = `${payrollPageTranslations.currentPeriod} ${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
+        break;
+      case 'month':
+        const startOfMonth = getStartOfMonth(today);
+        displayPeriodText = `${payrollPageTranslations.currentPeriod} ${startOfMonth.toLocaleString('default', { month: 'long' })} ${startOfMonth.getFullYear()}`;
+        break;
+      case 'custom':
+        if (customStartDate && customEndDate) {
+          displayPeriodText = `${payrollPageTranslations.currentPeriod} ${customStartDate} - ${customEndDate}`;
+        } else {
+          displayPeriodText = payrollPageTranslations.selectPeriod || 'Select period...';
+        }
+        break;
+      default:
+        displayPeriodText = payrollPageTranslations.selectPeriod || 'Select period...';
+        break;
+    }
+    setCurrentDisplayPeriod(displayPeriodText);
+  }, [periodType, customStartDate, customEndDate, payrollPageTranslations]);
+
+  // Filter payroll entries based on period and search query
+  const filteredPayrollEntries = useMemo(() => {
+    let filtered = payrollEntries;
+
+    // Filter by period
+    if (periodType !== 'custom' || (customStartDate && customEndDate)) {
+      let filterStart: string = '';
+      let filterEnd: string = '';
+      const today = new Date();
 
       switch (periodType) {
         case 'day':
-          calculatedStartDate = formatDate(today);
-          calculatedEndDate = formatDate(today);
-          setCurrentDisplayPeriod(`${payrollPageTranslations.currentPeriod} ${formatDate(today)}`);
+          filterStart = formatDate(today);
+          filterEnd = formatDate(today);
           break;
         case 'week':
-          const startOfWeek = getStartOfWeek(today);
-          const endOfWeek = getEndOfWeek(today);
-          calculatedStartDate = formatDate(startOfWeek);
-          calculatedEndDate = formatDate(endOfWeek);
-          setCurrentDisplayPeriod(`${payrollPageTranslations.currentPeriod} ${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`);
+          filterStart = formatDate(getStartOfWeek(today));
+          filterEnd = formatDate(getEndOfWeek(today));
           break;
         case 'month':
-          const startOfMonth = getStartOfMonth(today);
-          const endOfMonth = getEndOfMonth(today);
-          calculatedStartDate = formatDate(startOfMonth);
-          calculatedEndDate = formatDate(endOfMonth);
-          setCurrentDisplayPeriod(`${payrollPageTranslations.currentPeriod} ${startOfMonth.toLocaleString('default', { month: 'long' })} ${startOfMonth.getFullYear()}`);
+          filterStart = formatDate(getStartOfMonth(today));
+          filterEnd = formatDate(getEndOfMonth(today));
           break;
         case 'custom':
-          // For custom, use the state values directly
-          if (!customStartDate || !customEndDate) {
-            setCurrentDisplayPeriod(payrollPageTranslations.payrollPeriodDisplay); // Or 'Invalid Period'
-            setPayrollEntries([]); // Clear payroll if dates are not set for custom
-            return;
-          }
-          calculatedStartDate = customStartDate;
-          calculatedEndDate = customEndDate;
-          setCurrentDisplayPeriod(`${payrollPageTranslations.currentPeriod} ${customStartDate} - ${customEndDate}`);
-          break;
-        default:
-          // Fallback to month if periodType is somehow not set
-          const defaultStartOfMonth = getStartOfMonth(today);
-          const defaultEndOfMonth = getEndOfMonth(today);
-          calculatedStartDate = formatDate(defaultStartOfMonth);
-          calculatedEndDate = formatDate(defaultEndOfMonth);
-          setCurrentDisplayPeriod(`${payrollPageTranslations.currentPeriod} ${defaultStartOfMonth.toLocaleString('default', { month: 'long' })} ${defaultStartOfMonth.getFullYear()}`);
+          filterStart = customStartDate;
+          filterEnd = customEndDate;
           break;
       }
-      
-      const newPayrollEntries = calculatePayrollEntries(
-        allCompletedWorklogs.current,
-        allEmployees.current, // Use stored employees
-        calculatedStartDate,
-        calculatedEndDate
-      );
-      setPayrollEntries(newPayrollEntries);
+
+      if (filterStart && filterEnd) {
+        filtered = filtered.filter(entry => {
+          const entryDate = formatDate(entry.period);
+          return isDateInRange(entryDate, filterStart, filterEnd);
+        });
+      }
     }
-  }, [periodType, customStartDate, customEndDate, loading, payrollPageTranslations]);
 
-  // Calculate total payroll stats
-  const totalNetPayroll = payrollEntries.reduce((sum, entry) => sum + entry.netSalary, 0);
-  const totalBonus = payrollEntries.reduce((sum, entry) => sum + (entry.bonusDeduction > 0 ? entry.bonusDeduction : 0), 0);
-  const totalDeduction = payrollEntries.reduce((sum, entry) => sum + (entry.bonusDeduction < 0 ? Math.abs(entry.bonusDeduction) : 0), 0);
+    // Filter by search query
+    if (searchQuery) {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(entry =>
+        entry.fullName.toLowerCase().includes(lowerCaseQuery) ||
+        entry.position.toLowerCase().includes(lowerCaseQuery) ||
+        entry.employeeId.toLowerCase().includes(lowerCaseQuery) ||
+        String(entry.totalQuantity).includes(lowerCaseQuery) ||
+        String(entry.totalSalary).includes(lowerCaseQuery) ||
+        String(entry.netSalary).includes(lowerCaseQuery) ||
+        entry.paidStatus.toLowerCase().includes(lowerCaseQuery)
+      );
+    }
 
-  // Filter payroll entries based on global search
-  const lowerCaseSearchQuery = searchQuery.toLowerCase();
-  const filteredPayrollEntries = payrollEntries.filter(entry =>
-    entry.fullName.toLowerCase().includes(lowerCaseSearchQuery) ||
-    entry.employeeId.toLowerCase().includes(lowerCaseSearchQuery) ||
-    entry.payrollPeriod.toLowerCase().includes(lowerCaseSearchQuery) ||
-    String(entry.totalQuantity).includes(lowerCaseSearchQuery) ||
-    String(entry.calculatedSalary).includes(lowerCaseSearchQuery) ||
-    String(entry.netSalary).includes(lowerCaseSearchQuery) ||
-    (entry.bonusDeduction !== 0 && String(Math.abs(entry.bonusDeduction)).includes(lowerCaseSearchQuery)) ||
-    entry.paidStatus.toLowerCase().includes(lowerCaseSearchQuery) // NEW: Include paidStatus in search
-  );
+    return filtered;
+  }, [payrollEntries, periodType, customStartDate, customEndDate, searchQuery]);
 
+  // Calculate totals
+  const totalNetPayroll = filteredPayrollEntries.reduce((sum, entry) => sum + entry.netSalary, 0);
+  const totalBonus = filteredPayrollEntries.reduce((sum, entry) => sum + (entry.bonusDeduction > 0 ? entry.bonusDeduction : 0), 0);
+  const totalDeduction = filteredPayrollEntries.reduce((sum, entry) => sum + (entry.bonusDeduction < 0 ? Math.abs(entry.bonusDeduction) : 0), 0);
+
+  // Pagination
   const totalEntries = filteredPayrollEntries.length;
   const totalPages = Math.ceil(totalEntries / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -509,7 +389,7 @@ const Payroll = () => {
   const currentPayrollEntries = filteredPayrollEntries.slice(startIndex, endIndex);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset page when search query or period changes
+    setCurrentPage(1);
   }, [searchQuery, periodType, customStartDate, customEndDate]);
 
   const handlePageChange = (page: number) => {
@@ -528,7 +408,7 @@ const Payroll = () => {
           const updatedEntry = {
             ...entry,
             bonusDeduction: newBonusDeduction,
-            netSalary: entry.calculatedSalary + newBonusDeduction,
+            netSalary: entry.totalSalary + newBonusDeduction,
           };
           return updatedEntry;
         }
@@ -538,7 +418,6 @@ const Payroll = () => {
     console.log(`[UI-ONLY] Updated bonus/deduction for ${id}: ${newBonusDeduction}, Note: ${note}`);
   };
 
-  // NEW: Handler for changing paid status
   const handlePaidStatusChange = (id: string, newStatus: 'Paid' | 'Unpaid') => {
     setPayrollEntries(prevEntries =>
       prevEntries.map(entry =>
@@ -548,7 +427,6 @@ const Payroll = () => {
     console.log(`[UI-ONLY] Updated paid status for ${id} to: ${newStatus}`);
   };
 
-
   if (loading) return <div className="text-center py-8">{translations.common.loading}...</div>;
   if (error) return <div className="text-center py-8 text-red-600">{translations.common.error}: {error}</div>;
 
@@ -557,7 +435,6 @@ const Payroll = () => {
       <div className="space-y-4">
         {/* Stats Section */}
         <div className="bg-white rounded-2xl p-4 flex flex-col md:flex-row items-center md:justify-evenly gap-4 md:gap-6 shadow-sm">
-          {/* Stat Item 1: Total Net Payroll */}
           <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
             <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Calculator className="text-red-500 w-7 h-7" />
@@ -568,7 +445,6 @@ const Payroll = () => {
             </div>
           </div>
 
-          {/* Stat Item 2: Total Bonus */}
           <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
             <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Plus className="text-green-500 w-7 h-7" />
@@ -579,7 +455,6 @@ const Payroll = () => {
             </div>
           </div>
 
-          {/* Stat Item 3: Total Deduction */}
           <div className="flex items-center gap-4 flex-grow md:flex-grow-0 md:w-auto w-full">
             <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Minus className="text-blue-500 w-7 h-7" />
@@ -607,7 +482,6 @@ const Payroll = () => {
                   value={periodType}
                   onChange={(e) => {
                     setPeriodType(e.target.value as 'month' | 'week' | 'day' | 'custom');
-                    // Reset custom dates if switching away from custom
                     if (e.target.value !== 'custom') {
                       setCustomStartDate('');
                       setCustomEndDate('');
@@ -623,21 +497,17 @@ const Payroll = () => {
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
               </div>
 
-              {/* Conditional Custom Date Inputs */}
+              {/* Custom Date Inputs */}
               {periodType === 'custom' && (
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
-                  <label htmlFor="startDate" className="sr-only">{payrollPageTranslations.startDateLabel}</label>
                   <input
                     type="date"
-                    id="startDate"
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                   />
-                  <label htmlFor="endDate" className="sr-only">{payrollPageTranslations.endDateLabel}</label>
                   <input
                     type="date"
-                    id="endDate"
                     value={customEndDate}
                     onChange={(e) => setCustomEndDate(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
@@ -646,18 +516,12 @@ const Payroll = () => {
               )}
 
               <button
-                onClick={() => alert("Export functionality not implemented.")} // Placeholder for export
+                onClick={() => alert("Export functionality not implemented.")}
                 className="flex items-center justify-center gap-2 px-5 py-2 bg-[#4CAF50] text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors w-full sm:w-auto"
               >
                 <FileText className="w-4 h-4" />
                 {payrollPageTranslations.exportButton}
               </button>
-              {/* Original Sort by Date - This is usually for column sorting, not period selection */}
-              <div className="flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm cursor-pointer w-full sm:w-auto">
-                <span className="font-medium text-gray-700">{payrollPageTranslations.sortBy}</span>
-                <span className="font-semibold text-gray-900">{payrollPageTranslations.fullNameColumn}</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
             </div>
           </div>
 
@@ -666,21 +530,21 @@ const Payroll = () => {
               <thead>
                 <tr className="text-left text-gray-600 border-b border-gray-200 bg-gray-50">
                   <th className="py-3 px-4 font-semibold">{payrollPageTranslations.fullNameColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{payrollPageTranslations.productRateColumn}</th>
+                  <th className="py-3 px-4 font-semibold">Position</th>
                   <th className="py-3 px-4 font-semibold">{payrollPageTranslations.totalQuantityColumn}</th>
                   <th className="py-3 px-4 font-semibold">{payrollPageTranslations.totalSalaryColumn}</th>
                   <th className="py-3 px-4 font-semibold text-center">{payrollPageTranslations.bonusDeductionColumn}</th>
                   <th className="py-3 px-4 font-semibold">{payrollPageTranslations.netSalaryColumn}</th>
-                  <th className="py-3 px-4 font-semibold">{payrollPageTranslations.paidStatusColumn}</th> {/* NEW COLUMN */}
+                  <th className="py-3 px-4 font-semibold">{payrollPageTranslations.paidStatusColumn}</th>
                 </tr>
               </thead>
               <tbody>
                 {currentPayrollEntries.map(entry => (
                   <tr key={entry.id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium text-gray-900">{entry.fullName}</td>
-                    <td className="py-3 px-4 text-gray-700">{entry.totalProductRate.toFixed(2)}</td>
+                    <td className="py-3 px-4 text-gray-700">{entry.position}</td>
                     <td className="py-3 px-4 text-gray-700">{entry.totalQuantity.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-gray-700">Ks. {entry.calculatedSalary.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-gray-700">Ks. {entry.totalSalary.toLocaleString()}</td>
                     <td className="py-3 px-4 text-center">
                       <button
                         onClick={() => handleOpenBonusDeductionModal(entry)}
@@ -698,7 +562,6 @@ const Payroll = () => {
                       </button>
                     </td>
                     <td className="py-3 px-4 font-bold text-gray-900">Ks. {entry.netSalary.toLocaleString()}</td>
-                    {/* NEW: Paid Status Dropdown */}
                     <td className="py-3 px-4 text-left">
                       <div className="relative">
                         <select
@@ -770,4 +633,3 @@ const Payroll = () => {
 };
 
 export default Payroll;
-// Mock services for worklog and employee data
